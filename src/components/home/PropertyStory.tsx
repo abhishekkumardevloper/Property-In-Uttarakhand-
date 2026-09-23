@@ -6,7 +6,7 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 
 export default function PropertyStory() {
   return (
-    <section className="section-padding relative overflow-hidden" style={{ background: "var(--color-charcoal)" }}>
+    <section className="py-20 lg:py-32 relative overflow-hidden" style={{ background: "var(--color-charcoal)" }}>
       {/* Subtle mountain texture */}
       <div
         className="absolute inset-0 opacity-5 pointer-events-none"
@@ -17,38 +17,39 @@ export default function PropertyStory() {
         }}
       />
 
-      <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+      <div className="container-custom px-4 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
           {/* Image */}
-          <ScrollReveal direction="left" className="relative">
-            <div className="relative overflow-hidden" style={{ aspectRatio: "4/5" }}>
+          <ScrollReveal direction="left" className="relative w-full">
+            <div className="relative overflow-hidden w-full group" style={{ aspectRatio: "4/5" }}>
               <Image
-                src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80"
-                alt="Premium mountain property in Uttarakhand"
+                src="https://images.unsplash.com/photo-1513694203232-719a280e022f?w=900&q=80"
+                alt="Premium plotted development in Uttarakhand"
                 fill
-                className="object-cover"
-                style={{ transition: "transform 0.8s ease" }}
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
               {/* Gold frame accent */}
               <div
-                className="absolute inset-0 border border-white/5"
+                className="absolute inset-0 border border-gold/20 pointer-events-none transition-all duration-500 group-hover:border-gold/40 group-hover:m-4"
                 style={{ margin: "12px" }}
               />
+              
               {/* Stat overlay */}
               <div
-                className="absolute bottom-8 left-8 glass-dark p-6"
-                style={{ minWidth: "180px" }}
+                className="absolute bottom-6 left-6 lg:bottom-8 lg:left-8 glass-dark p-6 rounded-lg backdrop-blur-md shadow-2xl"
+                style={{ minWidth: "160px" }}
               >
-                <p className="stat-number" style={{ fontSize: "3rem" }}>
-                  6+
+                <p className="stat-number text-gold leading-none" style={{ fontSize: "2.5rem", fontFamily: "var(--font-cormorant)" }}>
+                  100+
                 </p>
                 <p
-                  className="text-stone text-xs mt-1 leading-relaxed"
-                  style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.05em" }}
+                  className="text-stone text-xs mt-2 leading-relaxed uppercase tracking-widest"
+                  style={{ fontFamily: "var(--font-inter)" }}
                 >
-                  Premium Himalayan
+                  Premium Plots
                   <br />
-                  Locations
+                  Sold
                 </p>
               </div>
             </div>
@@ -56,40 +57,37 @@ export default function PropertyStory() {
 
           {/* Text */}
           <ScrollReveal direction="right" delay={150}>
-            <div className="max-w-lg">
-              <span className="text-label text-gold">Our Properties</span>
-              <div className="gold-divider" />
+            <div className="max-w-lg mx-auto lg:mx-0 text-center lg:text-left">
+              <span className="text-label text-gold block mb-2">Our Vision</span>
+              <div className="gold-divider mx-auto lg:mx-0 mb-8" />
 
               <h2
-                className="display-md text-ivory mb-8"
+                className="display-md text-ivory mb-6 lg:mb-8 leading-tight"
                 style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
               >
-                Property, Surrounded by Possibility.
+                Plotting Your Future.
+                <br />
+                <em style={{ fontStyle: "italic", color: "var(--color-gold)" }}>Securing Your Legacy.</em>
               </h2>
 
               <p
-                className="text-stone leading-relaxed mb-6"
+                className="text-stone text-sm md:text-base leading-relaxed mb-6"
                 style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
               >
-                In Uttarakhand, land is not simply a transaction. It is a
-                relationship — with the mountain that frames your morning, the
-                valley that stretches below your window, the forest that holds
-                your boundary wall.
+                In Uttarakhand, land is not simply a transaction. It is an enduring relationship — with the forest that borders your property, the mountains that frame your mornings, and the rapid infrastructure growth accelerating your investment.
               </p>
               <p
-                className="text-stone leading-relaxed mb-12"
+                className="text-stone text-sm md:text-base leading-relaxed mb-10"
                 style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
               >
-                We curate properties where extraordinary location meets genuine
-                investment potential — from architect-designed villas in
-                Mussoorie to emerging alpine land in Munsiyari.
+                We specialize exclusively in 143-approved residential plots and highway-facing land parcels. From Hanuman-themed spiritual communities near Rajaji National Park to prime expressway investments, we deliver clear-title properties where lifestyle meets high ROI.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/properties" className="btn-primary text-xs" data-cursor="View">
-                  View All Properties
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link href="/properties" className="btn-primary-filled text-xs w-full sm:w-auto text-center" data-cursor="View">
+                  Explore Plots
                 </Link>
-                <Link href="/about" className="btn-ghost text-xs" data-cursor="About">
+                <Link href="/about" className="btn-ghost text-xs w-full sm:w-auto text-center" data-cursor="About">
                   Our Approach
                 </Link>
               </div>
