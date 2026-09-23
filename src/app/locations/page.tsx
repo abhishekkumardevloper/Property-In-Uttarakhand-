@@ -6,10 +6,10 @@ import { MapPin, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Locations — Discover Uttarakhand | Himalayan Estates",
+  title: "Locations — Premium Plots | Property In Uttarakhand",
   description:
-    "Explore premium real estate destinations across Uttarakhand — Dehradun, Mussoorie, Rishikesh, Nainital, Haridwar, and Munsiyari.",
-  alternates: { canonical: "https://himalayanestates.in/locations" },
+    "Explore premium real estate and plotting destinations across Uttarakhand — featuring highway-facing land, gated societies, and nature-centric plots.",
+  alternates: { canonical: "https://propertyinuttarakhand.com/locations" },
 };
 
 export default function LocationsPage() {
@@ -18,7 +18,7 @@ export default function LocationsPage() {
       {/* Hero */}
       <section
         className="relative flex items-end"
-        style={{ height: "65vh", minHeight: "450px" }}
+        style={{ height: "65vh", minHeight: "400px" }}
       >
         <Image
           src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1400&q=80"
@@ -34,55 +34,55 @@ export default function LocationsPage() {
               "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 70%, var(--color-charcoal) 100%)",
           }}
         />
-        <div className="container-custom relative z-10 pb-20">
+        <div className="container-custom relative z-10 pb-16 lg:pb-20">
           <span className="text-label text-gold">Our Locations</span>
           <div className="gold-divider" />
           <h1
             className="display-lg text-ivory"
             style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
           >
-            Discover
+            Discover Your
             <br />
-            <em style={{ fontStyle: "italic" }}>Uttarakhand.</em>
+            <em style={{ fontStyle: "italic" }}>Perfect Plot.</em>
           </h1>
         </div>
       </section>
 
       {/* Intro */}
-      <section className="py-20">
+      <section className="py-16 lg:py-20">
         <div className="container-custom max-w-3xl">
           <ScrollReveal>
             <p
-              className="text-stone text-lg leading-loose"
+              className="text-stone text-base lg:text-lg leading-loose"
               style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
             >
-              Uttarakhand is not one landscape — it is many. From the broad
-              forested valleys of Dehradun to the high-altitude drama of
-              Munsiyari, each destination carries its own elevation, its own
-              personality, and its own property opportunity.
+              Uttarakhand is not just a destination — it is an opportunity. From the highway-connected corridors of Dehradun to the tranquil forest borders of Rajaji National Park, every location offers a unique canvas for your dream home or your next big high-ROI investment.
             </p>
           </ScrollReveal>
         </div>
       </section>
 
       {/* Locations — alternating layout */}
-      <section className="pb-32">
-        <div className="container-custom space-y-32">
+      <section className="pb-20 lg:pb-32">
+        {/* Adjusted spacing for mobile (space-y-16) vs desktop (space-y-32) */}
+        <div className="container-custom space-y-16 lg:space-y-32">
           {locations.map((location, i) => (
             <ScrollReveal key={location.id} direction={i % 2 === 0 ? "left" : "right"}>
-              <div
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
-                  i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""
-                }`}
-              >
-                {/* Image */}
-                <div className="relative overflow-hidden group" style={{ aspectRatio: "4/3" }}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-20 items-center">
+                
+                {/* Image - Uses explicit ordering for perfect mobile stacking */}
+                <div 
+                  className={`relative overflow-hidden group w-full ${
+                    i % 2 === 1 ? "lg:order-2" : "lg:order-1"
+                  }`} 
+                  style={{ aspectRatio: "4/3" }}
+                >
                   <Image
                     src={location.image}
                     alt={location.name}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                   {/* Fog hover */}
                   <div
@@ -93,7 +93,7 @@ export default function LocationsPage() {
                     }}
                   />
                   {/* Elevation badge */}
-                  <div className="absolute top-5 left-5 glass-dark px-4 py-2">
+                  <div className="absolute top-4 left-4 lg:top-5 lg:left-5 glass-dark px-4 py-2">
                     <span
                       className="text-gold text-xs"
                       style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.1em" }}
@@ -104,12 +104,12 @@ export default function LocationsPage() {
                 </div>
 
                 {/* Content */}
-                <div>
+                <div className={i % 2 === 1 ? "lg:order-1" : "lg:order-2"}>
                   <div className="flex items-center gap-3 mb-4">
                     <MapPin size={14} className="text-gold" />
                     <span className="text-label text-gold" style={{ fontSize: "9px" }}>
                       {location.distanceFromDehradun === "0 km"
-                        ? "State Capital"
+                        ? "State Capital Region"
                         : `${location.distanceFromDehradun} from Dehradun`}
                     </span>
                   </div>
@@ -122,7 +122,7 @@ export default function LocationsPage() {
                   </h2>
 
                   <p
-                    className="text-gold text-lg font-light mb-6"
+                    className="text-gold text-base lg:text-lg font-light mb-6"
                     style={{ fontFamily: "var(--font-cormorant)", fontStyle: "italic" }}
                   >
                     {location.tagline}
@@ -131,7 +131,7 @@ export default function LocationsPage() {
                   <div className="gold-divider" />
 
                   <p
-                    className="text-stone leading-loose mb-6"
+                    className="text-stone text-sm lg:text-base leading-loose mb-6"
                     style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
                   >
                     {location.description}
@@ -179,9 +179,9 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <div className="glass-gold p-5 mb-8">
+                  <div className="glass-gold p-4 lg:p-5 mb-8">
                     <p
-                      className="text-ivory text-sm leading-relaxed"
+                      className="text-ivory text-xs lg:text-sm leading-relaxed"
                       style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
                     >
                       {location.investmentNote}
@@ -190,7 +190,7 @@ export default function LocationsPage() {
 
                   <Link
                     href="/properties"
-                    className="flex items-center gap-3 text-gold hover:gap-4 transition-all"
+                    className="flex items-center gap-3 text-gold hover:gap-4 transition-all w-fit"
                     style={{
                       fontFamily: "var(--font-inter)",
                       fontSize: "11px",
@@ -199,7 +199,7 @@ export default function LocationsPage() {
                     }}
                     data-cursor="View"
                   >
-                    Explore {location.name} Properties
+                    Explore {location.name} Plots
                     <ArrowRight size={12} />
                   </Link>
                 </div>
@@ -211,27 +211,27 @@ export default function LocationsPage() {
 
       {/* CTA */}
       <section
-        className="py-28 text-center"
+        className="py-20 lg:py-28 text-center"
         style={{ background: "var(--color-mountain-dark)" }}
       >
-        <div className="container-custom">
+        <div className="container-custom px-4">
           <ScrollReveal>
             <h2
-              className="display-sm text-ivory mb-6"
+              className="display-sm text-ivory mb-4 lg:mb-6"
               style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
             >
               Not Sure Which Location?
             </h2>
             <p
-              className="text-stone max-w-lg mx-auto mb-10 leading-relaxed"
+              className="text-stone text-sm lg:text-base max-w-lg mx-auto mb-8 lg:mb-10 leading-relaxed"
               style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
             >
-              Our advisors have visited every location we list. Share your
-              lifestyle and investment goals and we will point you toward the
-              right Uttarakhand destination.
+              Our property advisors know every upcoming highway and zoning change. Share your
+              investment goals and we will point you toward the
+              perfect plot in Uttarakhand.
             </p>
             <Link href="/contact" className="btn-primary text-xs" data-cursor="Contact">
-              Find My Location
+              Talk To An Advisor
             </Link>
           </ScrollReveal>
         </div>
