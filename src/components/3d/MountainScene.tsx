@@ -3,31 +3,34 @@
 /**
  * MountainScene — procedural Himalayan valley (vanilla three.js, no r3f needed)
  *
- * Needs:  npm i three   +   npm i -D @types/three      (three >= r155)
+ * Needs:  npm i three   +   npm i -D @types/three      (three >= r163)
  *
- * What you get
- *  - Displaced terrain with a meandering river, meadows, pine forest, rock and snow peaks
- *  - Atmospheric depth (exp fog matched to a physically-styled sky dome + sun glow)
- *  - A few soft drifting clouds + low valley mist
- *  - Cinematic push-in camera (starts when `started` becomes true), mouse parallax on
- *    desktop, scroll parallax, gentle idle sway
- *  - Mobile-aware: lower mesh density / fewer trees / capped pixel ratio / portrait FOV
- *  - Pauses when off-screen or tab hidden, full dispose on unmount
- *  - prefers-reduced-motion: camera jumps to the final pose, no sway
+ * Realism comes from:
+ *  - ridged-multifractal + domain-warped terrain (sharp spurs, gullies, real ridgelines)
+ *  - per-pixel terrain shading: forest canopy speckle, rock strata, grass streaks,
+ *    micro-relief normals that fade out with distance
+ *  - baked curvature AO, snow / rock / forest / meadow / farmland material weights
+ *  - sky dome + image-based lighting generated from that same sky (PMREM)
+ *  - atmospheric perspective (exp fog), drifting clouds, valley mist
+ *  - rippling river with sky reflections, instanced multi-tier pines near the camera
+ *
+ * Camera: cinematic push-in when `started` flips true, mouse + scroll parallax.
+ * Mobile: lighter mesh / fewer trees / capped pixel ratio / portrait FOV.
  */
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 type Props = {
   /** flip to true when the intro doors start opening -> camera dolly begins */
   started: boolean;
-  /** called once, after the first frame has been rendered */
+  /** called once, after the first frames have been rendered */
   onReady?: () => void;
 };
 
 /* ------------------------------------------------------------------ */
-/*  Small helpers                                                      */
+/*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -73,10 +76,29 @@ function fbm(x: number, y: number, oct = 5) {
   let f = 1;
   for (let i = 0; i < oct; i++) {
     s += a * vnoise(x * f, y * f);
-    f *= 2;
+    f *= 2.03;
     a *= 0.5;
   }
   return s;
+}
+
+/** ridged multifractal: sharp crests, eroded-looking flanks (0..~1) */
+function ridged(x: number, y: number, oct = 6) {
+  let s = 0;
+  let a = 0.5;
+  let f = 1;
+  let w = 1;
+  for (let i = 0; i < oct; i++) {
+    let n = vnoise(x * f + i * 17.3, y * f - i * 9.1);
+    n = 1 - Math.abs(2 * n - 1);
+    n *= n;
+    n *= w;
+    w = clamp01(n * 2);
+    s += n * a;
+    f *= 2.07;
+    a *= 0.5;
+  }
+  return s * 1.6;
 }
 
 /* ------------------------------------------------------------------ */
@@ -84,53 +106,92 @@ function fbm(x: number, y: number, oct = 5) {
 /* ------------------------------------------------------------------ */
 
 const Z_NEAR = 140;
-const Z_FAR = -560;
-const X_EXT = 520;
+const Z_FAR = -640;
+const X_EXT = 620;
 const WATER_Y = -0.3;
 
 /** x-position of the river centre-line at depth z */
 const riverX = (z: number) => -Math.sin(z * 0.012) * 14 - Math.sin(z * 0.031) * 4;
 
 function heightAt(x: number, z: number) {
-  const ax = Math.abs(x - riverX(z)); // distance from river axis
+  const ax = Math.abs(x - riverX(z));
 
-  // valley walls: rise from the river, saturate around ~110
-  const wall = 110 * (1 - Math.exp(-Math.pow(Math.max(ax - 12, 0) / 60, 1.4)));
+  // domain warp -> twisting spurs and side valleys instead of round blobs
+  const wx = x + (fbm(x * 0.004 + 5, z * 0.004, 3) - 0.5) * 120;
+  const wz = z + (fbm(x * 0.004 + 9, z * 0.004 + 2, 3) - 0.5) * 120;
 
-  // rugged detail, only on the slopes
-  const rough = (fbm(x * 0.011 + 3.1, z * 0.011 + 7.7, 5) - 0.42) * 85 * sm(8, 110, ax);
+  const slopeMask = sm(50, 280, ax);
 
-  // far snowy range closing the valley
-  const ridge = 1 - Math.abs(2 * fbm(x * 0.006 + 11, z * 0.006 + 5, 4) - 1);
-  const back = sm(-40, -380, z);
-  const backH = back * (85 + Math.pow(ridge, 1.6) * 150) * (0.55 + 0.45 * sm(0, 120, ax));
+  // valley walls rising from the river (saturating)
+  const wall = 55 * (1 - Math.exp(-Math.pow(Math.max(ax - 30, 0) / 100, 1.3)));
+
+  // ridged mountains, only on the flanks
+  const mountain = Math.pow(ridged(wx * 0.0055 + 20, wz * 0.0055 + 40, 6), 1.1) * 175 * slopeMask;
+  const detail = (fbm(x * 0.035 + 7, z * 0.035, 4) - 0.5) * 18 * sm(20, 160, ax);
+
+  // the big range closing the valley
+  const backRidge = ridged(wx * 0.0042 + 3, wz * 0.0042 + 8, 5);
+  const back = sm(-30, -450, z);
+  const backH = back * (110 + Math.pow(backRidge, 1.25) * 230) * (0.45 + 0.55 * sm(0, 200, ax));
 
   // valley floor: gentle meadow undulation, flat near the water
-  const floor = 3 + (fbm(x * 0.03, z * 0.03, 3) - 0.5) * 5 * sm(3, 25, ax) * (1 - sm(25, 60, ax));
+  const floor =
+    3 + (fbm(x * 0.03, z * 0.03, 3) - 0.5) * 5 * sm(3, 25, ax) * (1 - sm(25, 60, ax));
 
   // river channel
-  const channel = Math.exp(-(ax * ax) / 72) * 5.5;
+  const channel = Math.exp(-(ax * ax) / 128) * 5.5;
 
-  return floor + wall + rough + backH - channel;
+  const total = floor + wall + mountain + detail + backH - channel;
+
+  // keep the river running all the way up the valley: the closer to the far range,
+  // the narrower the gorge that carries it through
+  const w = 32 - 18 * back;
+  const carve = Math.exp(-(ax * ax) / (2 * w * w));
+  return total * (1 - carve) + (floor - channel) * carve;
 }
 
 /* ------------------------------------------------------------------ */
 /*  Palette (sRGB hex — THREE.Color converts to linear)                */
 /* ------------------------------------------------------------------ */
 
-const GRASS_LOW = new THREE.Color("#86bf4a");
-const GRASS_DEEP = new THREE.Color("#4f9033");
-const FOREST = new THREE.Color("#2a6234");
-const ALPINE = new THREE.Color("#93a062");
-const ROCK = new THREE.Color("#8d8879");
+const GRASS_A = new THREE.Color("#88b84c");
+const GRASS_B = new THREE.Color("#5a9636");
+const FOREST_A = new THREE.Color("#1c4630");
+const FOREST_B = new THREE.Color("#3d6d37");
+const ALPINE = new THREE.Color("#9aa066");
+const ROCK_A = new THREE.Color("#7d7768");
+const ROCK_B = new THREE.Color("#5f5b52");
 const SNOW = new THREE.Color("#f4f7fb");
-const SAND = new THREE.Color("#bdb293");
+const SAND = new THREE.Color("#bcb08f");
+const FIELDS = ["#a8c452", "#cbc46c", "#6fae43", "#b9a85c", "#8fbf4a"].map((h) => new THREE.Color(h));
 
-const SKY_TOP = new THREE.Color("#2c68b0");
-const SKY_MID = new THREE.Color("#78aee0");
-const SKY_HORIZON = new THREE.Color("#d3e1ec");
-const SUN_COLOR = new THREE.Color("#ffd7a1");
-const SUN_DIR = new THREE.Vector3(0.28, 0.3, -0.9).normalize();
+const SKY_TOP = new THREE.Color("#2a64ad");
+const SKY_MID = new THREE.Color("#7db0e2");
+const SKY_HORIZON = new THREE.Color("#cfdeeb");
+const SUN_COLOR = new THREE.Color("#ffd9a6");
+const SUN_DIR = new THREE.Vector3(0.55, 0.34, -0.75).normalize();
+
+/* ------------------------------------------------------------------ */
+/*  GLSL shared by terrain + water                                     */
+/* ------------------------------------------------------------------ */
+
+const GLSL_NOISE = /* glsl */ `
+  float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+  float vn(vec2 p){
+    vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), u.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), u.x), u.y);
+  }
+  float fbm3(vec2 p){
+    float s = 0.0; float a = 0.5;
+    for (int i = 0; i < 3; i++) { s += a * vn(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; }
+    return s;
+  }
+  float fbm4(vec2 p){
+    float s = 0.0; float a = 0.5;
+    for (int i = 0; i < 4; i++) { s += a * vn(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; }
+    return s;
+  }
+`;
 
 /* ------------------------------------------------------------------ */
 /*  Builders                                                           */
@@ -141,127 +202,312 @@ function buildTerrain(segX: number, segZ: number) {
   geo.rotateX(-Math.PI / 2);
 
   const pos = geo.attributes.position as THREE.BufferAttribute;
+  const cols = segX + 1;
+  const H = new Float32Array(pos.count);
 
-  // pass 1 — positions (grid is denser near the camera and near the valley axis)
+  // pass 1 — positions. Grid is denser near the camera and near the valley axis.
+  // NOTE: x is mirrored as well as z is reversed -> net rotation, so triangle winding stays front-facing.
   for (let i = 0; i < pos.count; i++) {
     const u = pos.getX(i) * 2; // -1..1
     const v = pos.getZ(i) + 0.5; // 0..1
-    const x = Math.sign(u) * Math.pow(Math.abs(u), 1.9) * X_EXT;
+    const x = -Math.sign(u) * Math.pow(Math.abs(u), 1.9) * X_EXT;
     const z = Z_NEAR - Math.pow(v, 1.45) * (Z_NEAR - Z_FAR);
-    pos.setXYZ(i, x, heightAt(x, z), z);
+    const h = heightAt(x, z);
+    H[i] = h;
+    pos.setXYZ(i, x, h, z);
   }
   geo.computeVertexNormals();
 
-  // pass 2 — vertex colours from height / slope / noise
+  // pass 2 — vertex colours, AO and material weights
   const nrm = geo.attributes.normal as THREE.BufferAttribute;
   const colors = new Float32Array(pos.count * 3);
+  const mats = new Float32Array(pos.count * 4); // forest, rock, snow, grass
   const c = new THREE.Color();
+  const tmp = new THREE.Color();
+  const rows = segZ + 1;
+  const K = 2; // AO sampling stride in grid cells
 
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i);
     const h = pos.getY(i);
     const z = pos.getZ(i);
     const slope = 1 - nrm.getY(i);
+    const ax = Math.abs(x - riverX(z));
 
     const n = fbm(x * 0.05, z * 0.05, 3);
     const n2 = fbm(x * 0.2 + 9, z * 0.2, 2);
+    const n3 = fbm(x * 0.012 + 40, z * 0.012 - 13, 3);
 
-    c.copy(GRASS_LOW).lerp(GRASS_DEEP, clamp01(n * 1.3));
+    // weights
+    const forest = sm(5, 24, h) * (1 - sm(105, 140, h + (n - 0.5) * 24));
+    const rock = Math.max(sm(0.24, 0.5, slope), sm(135, 195, h + (n - 0.5) * 30) * 0.9);
+    const snow = sm(195, 245, h + (n2 - 0.5) * 40) * (1 - sm(0.4, 0.7, slope) * 0.7);
+    const forestW = forest * (1 - rock);
+    const grassW = (1 - forestW) * (1 - rock) * (1 - snow);
 
-    const forest = sm(4, 22, h) * (1 - sm(70, 92, h));
-    c.lerp(FOREST, forest * (0.55 + 0.45 * n2));
-
-    c.lerp(ALPINE, sm(60, 90, h + (n - 0.5) * 20) * 0.6);
-
-    const rock = Math.max(sm(0.2, 0.42, slope), sm(88, 125, h + (n - 0.5) * 25) * 0.9);
-    c.lerp(ROCK, rock);
-
-    const snow = sm(120, 150, h + (n2 - 0.5) * 30) * (1 - sm(0.3, 0.6, slope) * 0.7);
+    // base colour
+    c.copy(GRASS_A).lerp(GRASS_B, clamp01(n * 1.3));
+    tmp.copy(FOREST_A).lerp(FOREST_B, clamp01(n3 * 1.5 - 0.15));
+    c.lerp(tmp, forestW * (0.75 + 0.25 * n2));
+    c.lerp(ALPINE, sm(80, 135, h + (n - 0.5) * 24) * 0.55 * (1 - forestW));
+    tmp.copy(ROCK_A).lerp(ROCK_B, clamp01(n2 * 1.4));
+    c.lerp(tmp, rock);
     c.lerp(SNOW, snow);
 
+    // terraced farmland / plots on the valley floor
+    if (h < 14 && ax > 13 && ax < 62) {
+      const patch = sm(0.5, 0.56, fbm(x * 0.012 + 70, z * 0.012, 3));
+      const cell = hash2(Math.floor(x / 11), Math.floor(z / 17));
+      const f = FIELDS[Math.floor(cell * FIELDS.length) % FIELDS.length];
+      c.lerp(f, patch * 0.7 * (1 - sm(40, 62, ax)) * sm(13, 20, ax));
+    }
+
+    // riverbank sand
     c.lerp(SAND, (1 - sm(0.2, 1.8, h)) * 0.85);
 
-    c.multiplyScalar(0.9 + 0.2 * n2);
+    // curvature AO (concave = darker, convex = a touch brighter)
+    const ix = i % cols;
+    const iy = (i / cols) | 0;
+    const l = H[iy * cols + Math.max(ix - K, 0)];
+    const r = H[iy * cols + Math.min(ix + K, cols - 1)];
+    const u = H[Math.max(iy - K, 0) * cols + ix];
+    const d = H[Math.min(iy + K, rows - 1) * cols + ix];
+    const spacing = Math.max(
+      Math.hypot(
+        pos.getX(iy * cols + Math.min(ix + K, cols - 1)) - pos.getX(iy * cols + Math.max(ix - K, 0)),
+        pos.getZ(iy * cols + Math.min(ix + K, cols - 1)) - pos.getZ(iy * cols + Math.max(ix - K, 0))
+      ) / 2,
+      0.5
+    );
+    const conc = ((l + r + u + d) / 4 - h) / spacing;
+    const ao = 1 - 0.55 * clamp01(conc * 0.9) + 0.18 * clamp01(-conc * 0.9);
+
+    c.multiplyScalar(ao * (0.92 + 0.16 * n2));
     colors[i * 3] = c.r;
     colors[i * 3 + 1] = c.g;
     colors[i * 3 + 2] = c.b;
+    mats[i * 4] = forestW;
+    mats[i * 4 + 1] = rock;
+    mats[i * 4 + 2] = snow;
+    mats[i * 4 + 3] = grassW;
   }
   geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute("aMat", new THREE.BufferAttribute(mats, 4));
 
   const mat = new THREE.MeshStandardMaterial({
     vertexColors: true,
-    roughness: 0.96,
+    roughness: 0.94,
     metalness: 0,
   });
+
+  mat.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+         attribute vec4 aMat;
+         varying vec4 vMat;
+         varying vec3 vWPos;`
+      )
+      .replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+         vMat = aMat;
+         vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+         varying vec4 vMat;
+         varying vec3 vWPos;
+         ${GLSL_NOISE}`
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+         {
+           vec2 p = vWPos.xz;
+           float dist = length(vWPos - cameraPosition);
+           float nearK = 1.0 - smoothstep(70.0, 340.0, dist);
+           float midK  = 1.0 - smoothstep(250.0, 1100.0, dist);
+
+           // forest: individual crowns up close, tonal patches further away
+           if (vMat.x > 0.02) {
+             float crown = vn(p * 0.85) * 0.55 + vn(p * 2.4) * 0.45;
+             diffuseColor.rgb *= mix(1.0, 0.6 + 0.75 * crown, vMat.x * nearK);
+             float tone = fbm3(p * 0.05);
+             diffuseColor.rgb *= mix(1.0, 0.72 + 0.6 * tone, vMat.x * midK);
+           }
+
+           // rock: broken strata + cracks + warm iron streaks
+           if (vMat.y > 0.02) {
+             float strata = sin(vWPos.y * 0.23 + fbm3(p * 0.03) * 10.0);
+             float crack = fbm3(p * 0.3);
+             float rk = 0.88 + 0.12 * strata + 0.34 * (crack - 0.5);
+             diffuseColor.rgb *= mix(1.0, rk, vMat.y * midK);
+             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.14, 0.96, 0.78), vMat.y * fbm3(p * 0.018 + 3.0) * 0.7 * midK);
+           }
+
+           // grass: streaky wind pattern
+           if (vMat.w > 0.02 && nearK > 0.0) {
+             float gr = vn(p * vec2(1.6, 3.2)) * 0.6 + vn(p * 7.0) * 0.4;
+             diffuseColor.rgb *= mix(1.0, 0.82 + 0.34 * gr, vMat.w * nearK);
+           }
+
+           // snow: cool shadows in the hollows
+           if (vMat.z > 0.02) {
+             diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.9, 0.95, 1.0), vMat.z * (0.35 + 0.35 * fbm3(p * 0.08)));
+           }
+         }`
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+         {
+           float dist2 = length(vWPos - cameraPosition);
+           float amp = (0.32 * vMat.y + 0.14 * vMat.x + 0.06 * vMat.w + 0.08 * vMat.z) * (1.0 - smoothstep(140.0, 800.0, dist2));
+           if (amp > 0.01) {
+             vec2 q = vWPos.xz * 0.45;
+             float e = 0.3;
+             float c0 = fbm3(q);
+             float cx = fbm3(q + vec2(e, 0.0));
+             float cz = fbm3(q + vec2(0.0, e));
+             vec3 g = vec3((c0 - cx) / e, 0.0, (c0 - cz) / e);
+             vec3 nW = inverseTransformDirection(normal, viewMatrix);
+             nW = normalize(nW + g * amp);
+             normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);
+           }
+         }`
+      );
+  };
+
   return new THREE.Mesh(geo, mat);
 }
 
-function buildWater() {
-  const geo = new THREE.PlaneGeometry(220, 720, 1, 1);
+function buildWater(timeUniform: { value: number }) {
+  const geo = new THREE.PlaneGeometry(240, 800, 1, 1);
   geo.rotateX(-Math.PI / 2);
   const mat = new THREE.MeshStandardMaterial({
-    color: "#4f93a8",
-    emissive: "#0d3346",
-    emissiveIntensity: 0.6,
-    roughness: 0.1,
-    metalness: 0.05,
+    color: "#4f8189",
+    emissive: "#0b2a30",
+    emissiveIntensity: 0.4,
+    roughness: 0.06,
+    metalness: 0.15,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.94,
+    envMapIntensity: 1.4,
   });
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uTime = timeUniform;
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vWPos;")
+      .replace(
+        "#include <begin_vertex>",
+        "#include <begin_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;"
+      );
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>
+         uniform float uTime;
+         varying vec3 vWPos;
+         ${GLSL_NOISE}`
+      )
+      .replace(
+        "#include <normal_fragment_maps>",
+        `#include <normal_fragment_maps>
+         {
+           vec2 q = vec2(vWPos.x * 0.9, vWPos.z * 0.32 + uTime * 1.6);
+           float a = vn(q) + 0.5 * vn(q * 2.3 + 4.0);
+           float b = vn(q + vec2(0.6, 0.0)) + 0.5 * vn((q + vec2(0.6, 0.0)) * 2.3 + 4.0);
+           float c = vn(q + vec2(0.0, 0.6)) + 0.5 * vn((q + vec2(0.0, 0.6)) * 2.3 + 4.0);
+           float k = 0.22 * (1.0 - smoothstep(120.0, 600.0, length(vWPos - cameraPosition)));
+           vec3 nW = inverseTransformDirection(normal, viewMatrix);
+           nW = normalize(nW + vec3((a - b) * k, 0.0, (a - c) * k));
+           normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);
+         }`
+      );
+  };
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(0, WATER_Y, -210);
+  mesh.position.set(0, WATER_Y, -230);
   return mesh;
+}
+
+function makePineGeometry() {
+  const parts: THREE.BufferGeometry[] = [];
+  const tiers: [number, number, number][] = [
+    [1.05, 2.3, 0.7],
+    [0.82, 2.1, 1.75],
+    [0.58, 1.9, 2.75],
+    [0.32, 1.3, 3.7],
+  ];
+  const trunk = new THREE.CylinderGeometry(0.1, 0.16, 1.0, 5, 1);
+  trunk.translate(0, 0.5, 0);
+  parts.push(trunk);
+  for (const [r, h, y] of tiers) {
+    const cone = new THREE.ConeGeometry(r, h, 8, 1);
+    cone.translate(0, y + h / 2, 0);
+    parts.push(cone);
+  }
+  const merged = mergeGeometries(parts, false) ?? new THREE.ConeGeometry(1, 4, 7, 1);
+  parts.forEach((p) => p.dispose());
+  return merged;
 }
 
 function buildTrees(attempts: number) {
   const rnd = mulberry32(1337);
-  const items: { x: number; y: number; z: number; r: number; h: number; t: number }[] = [];
+  const items: { x: number; y: number; z: number; r: number; h: number; t: number; ry: number }[] = [];
 
   for (let i = 0; i < attempts; i++) {
-    const x = (rnd() * 2 - 1) * 190;
-    const z = 110 - rnd() * 500;
+    const x = (rnd() * 2 - 1) * 170;
+    const z = 120 - rnd() * 360;
     const h = heightAt(x, z);
-    if (h < 1.6 || h > 80) continue;
+    if (h < 1.6 || h > 105) continue;
 
     const e = 2;
     const dx = heightAt(x + e, z) - heightAt(x - e, z);
     const dz = heightAt(x, z + e) - heightAt(x, z - e);
     const slope = Math.hypot(dx, dz) / (2 * e);
-    if (slope > 0.85) continue;
+    if (slope > 0.75) continue;
 
     const ax = Math.abs(x - riverX(z));
-    const patch = fbm(x * 0.02 + 50, z * 0.02, 3);
-    let p = patch > 0.42 ? 1 : 0;
-    if (ax < 22) p *= 0.12; // keep the valley floor as open meadow (plots!)
-    if (h > 55) p *= 1 - (h - 55) / 30;
+    const patch = fbm(x * 0.022 + 50, z * 0.022, 3);
+    let p = sm(0.36, 0.5, patch);
+    if (ax < 24) p *= 0.1; // keep the valley floor open — that's where the plots are
+    if (h > 78) p *= 1 - (h - 78) / 27;
     if (rnd() > p) continue;
 
+    const s = 0.7 + rnd() * 0.85;
     items.push({
       x,
-      y: h - 0.4,
+      y: h - 0.3,
       z,
-      r: 1.15 + rnd() * 0.95,
-      h: 1.3 + rnd() * 1.1,
-      t: rnd() * 0.7 + clamp01((h - 20) / 70) * 0.3,
+      r: s * (0.85 + rnd() * 0.3),
+      h: s * (0.95 + rnd() * 0.5),
+      t: rnd() * 0.75 + clamp01((h - 25) / 70) * 0.25,
+      ry: rnd() * Math.PI * 2,
     });
   }
 
-  const geo = new THREE.ConeGeometry(1, 4, 7, 1);
-  geo.translate(0, 2, 0);
-  const mat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.95, flatShading: true });
-  const mesh = new THREE.InstancedMesh(geo, mat, items.length);
+  const geo = makePineGeometry();
+  const mat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.95 });
+  const mesh = new THREE.InstancedMesh(geo, mat, Math.max(items.length, 1));
+  mesh.count = items.length;
   mesh.frustumCulled = false;
 
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
   const s = new THREE.Vector3();
   const p = new THREE.Vector3();
-  const a = new THREE.Color("#1d4a2a");
-  const b = new THREE.Color("#3b7a3a");
+  const up = new THREE.Vector3(0, 1, 0);
+  const a = new THREE.Color("#173d2a");
+  const b = new THREE.Color("#456f3a");
   const col = new THREE.Color();
 
   items.forEach((it, i) => {
-    q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * Math.PI * 2);
+    q.setFromAxisAngle(up, it.ry);
     s.set(it.r, it.h, it.r);
     p.set(it.x, it.y, it.z);
     m.compose(p, q, s);
@@ -273,7 +519,7 @@ function buildTrees(attempts: number) {
   return mesh;
 }
 
-function buildSky() {
+function buildSky(radius: number) {
   const mat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
@@ -312,7 +558,7 @@ function buildSky() {
       }
     `,
   });
-  return new THREE.Mesh(new THREE.SphereGeometry(1800, 32, 20), mat);
+  return new THREE.Mesh(new THREE.SphereGeometry(radius, 32, 20), mat);
 }
 
 function makeCloudTexture(seed: number) {
@@ -336,7 +582,6 @@ function makeCloudTexture(seed: number) {
     g.fillRect(0, 0, size, size);
   }
 
-  // soft blue-grey underside
   g.globalCompositeOperation = "source-atop";
   const shade = g.createLinearGradient(0, size * 0.36, 0, size * 0.68);
   shade.addColorStop(0, "rgba(255,255,255,0)");
@@ -380,13 +625,12 @@ export default function MountainScene({ started, onReady }: Props) {
         powerPreference: "high-performance",
       });
     } catch {
-      // No WebGL — the CSS gradient behind the canvas stays visible
-      readyRef.current?.();
+      readyRef.current?.(); // no WebGL — CSS gradient behind the canvas stays
       return;
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.0;
     renderer.setClearColor(SKY_HORIZON);
     const canvas = renderer.domElement;
     canvas.style.cssText = "display:block;width:100%;height:100%;";
@@ -394,25 +638,43 @@ export default function MountainScene({ started, onReady }: Props) {
 
     /* ---------- scene ---------- */
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(SKY_HORIZON.clone(), 0.0024);
+    scene.fog = new THREE.FogExp2(SKY_HORIZON.clone(), 0.0022);
 
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.5, 3200);
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.5, 3600);
 
-    const sky = buildSky();
+    const sky = buildSky(1900);
     scene.add(sky);
 
-    scene.add(new THREE.HemisphereLight(0xbfd8ff, 0x4d5a36, 1.0));
-    const key = new THREE.DirectionalLight(0xffe6c0, 2.6);
-    key.position.set(140, 110, 70);
-    scene.add(key);
-    const rim = new THREE.DirectionalLight(0xffc98a, 1.5);
-    rim.position.set(60, 50, -180);
-    scene.add(rim);
+    // image-based lighting + water reflections straight from the sky dome
+    let envTarget: THREE.WebGLRenderTarget | null = null;
+    try {
+      const envScene = new THREE.Scene();
+      const envSky = buildSky(50);
+      envScene.add(envSky);
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      envTarget = pmrem.fromScene(envScene, 0, 1, 200);
+      scene.environment = envTarget.texture;
+      scene.environmentIntensity = 0.7;
+      pmrem.dispose();
+      envSky.geometry.dispose();
+      (envSky.material as THREE.Material).dispose();
+    } catch {
+      /* falls back to plain lights */
+    }
 
-    const terrain = buildTerrain(isMobile ? 150 : 240, isMobile ? 170 : 260);
+    scene.add(new THREE.HemisphereLight(0xbfd8ff, 0x55603a, 0.5));
+    const key = new THREE.DirectionalLight(0xffe0b0, 3.2);
+    key.position.copy(SUN_DIR).multiplyScalar(400);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xdfe9ff, 0.9);
+    fill.position.set(-120, 90, 160);
+    scene.add(fill);
+
+    const waterTime = { value: 0 };
+    const terrain = buildTerrain(isMobile ? 190 : 330, isMobile ? 210 : 370);
     scene.add(terrain);
-    scene.add(buildWater());
-    scene.add(buildTrees(isMobile ? 1500 : 3400));
+    scene.add(buildWater(waterTime));
+    scene.add(buildTrees(isMobile ? 5000 : 11000));
 
     /* ---------- clouds ---------- */
     const cloudTextures = [makeCloudTexture(11), makeCloudTexture(29), makeCloudTexture(47)];
@@ -447,8 +709,8 @@ export default function MountainScene({ started, onReady }: Props) {
     /* ---------- camera choreography ---------- */
     const START_POS = new THREE.Vector3(0, 62, 125);
     const START_TGT = new THREE.Vector3(0, 38, -160);
-    const END_POS = new THREE.Vector3(0, 15, 62);
-    const END_TGT = new THREE.Vector3(0, 46, -175);
+    const END_POS = new THREE.Vector3(0, 17, 78);
+    const END_TGT = new THREE.Vector3(0, 66, -175);
     const tgt = new THREE.Vector3();
     const INTRO_SECONDS = 5.5;
 
@@ -467,7 +729,6 @@ export default function MountainScene({ started, onReady }: Props) {
       const aspect = w / h;
       renderer.setSize(w, h, false);
       camera.aspect = aspect;
-      // portrait phones get a taller field of view so the valley still reads
       camera.fov = aspect < 1 ? 55 + (1 - aspect) * 32 : 55;
       camera.updateProjectionMatrix();
     };
@@ -476,7 +737,8 @@ export default function MountainScene({ started, onReady }: Props) {
     ro.observe(container);
 
     /* ---------- loop ---------- */
-    const clock = new THREE.Clock();
+    let last = performance.now();
+    let t = 0;
     let introStart = -1;
     let raf = 0;
     let running = false;
@@ -490,15 +752,14 @@ export default function MountainScene({ started, onReady }: Props) {
       }
       raf = requestAnimationFrame(tick);
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const t = clock.elapsedTime;
+      const now = performance.now();
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      t += dt;
+      waterTime.value = t;
 
       if (startedRef.current && introStart < 0) introStart = t;
-      const p = reduceMotion
-        ? 1
-        : introStart < 0
-          ? 0
-          : clamp01((t - introStart) / INTRO_SECONDS);
+      const p = reduceMotion ? 1 : introStart < 0 ? 0 : clamp01((t - introStart) / INTRO_SECONDS);
       const e = 1 - Math.pow(1 - p, 3);
 
       camera.position.lerpVectors(START_POS, END_POS, e);
@@ -514,7 +775,6 @@ export default function MountainScene({ started, onReady }: Props) {
         tgt.y += mouse.y * 4;
       }
 
-      // scroll parallax (hero leaves the screen)
       const sp = clamp01(window.scrollY / Math.max(window.innerHeight, 1));
       camera.position.z -= sp * 30;
       camera.position.y += sp * 6;
@@ -541,7 +801,7 @@ export default function MountainScene({ started, onReady }: Props) {
     const kick = () => {
       if (running || !visible || document.hidden) return;
       running = true;
-      clock.getDelta();
+      last = performance.now();
       raf = requestAnimationFrame(tick);
     };
 
@@ -576,6 +836,7 @@ export default function MountainScene({ started, onReady }: Props) {
         else if (mat) mat.dispose();
       });
       cloudTextures.forEach((tx) => tx.dispose());
+      envTarget?.dispose();
       renderer.dispose();
       if (canvas.parentNode === container) container.removeChild(canvas);
     };
