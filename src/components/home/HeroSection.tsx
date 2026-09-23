@@ -9,7 +9,7 @@ const MountainScene = dynamic(() => import("@/components/3d/MountainScene"), {
   ssr: false,
   loading: () => (
     <div
-      className="absolute inset-0"
+      className="absolute inset-0 -z-10"
       style={{
         background:
           "linear-gradient(180deg, #0d1f17 0%, #1e3a2a 50%, #111111 100%)",
@@ -36,10 +36,13 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "100svh", minHeight: "600px" }}>
+    <section 
+      className="relative w-full overflow-hidden flex flex-col items-center justify-center" 
+      style={{ height: "100dvh", minHeight: "600px" }}
+    >
       
-      {/* 3D Mountain Background - Added absolute inset-0 -z-10 to force it behind text */}
-      <div className="hero-canvas-container absolute inset-0 -z-10">
+      {/* 3D Mountain Background */}
+      <div className="absolute inset-0 -z-10">
         {mounted && (
           <Suspense
             fallback={
@@ -57,24 +60,24 @@ export default function HeroSection() {
         )}
       </div>
 
-      {/* Cinematic overlay - Added absolute inset-0 and z-0 */}
-      <div className="hero-overlay absolute inset-0 z-0 bg-black/20" />
+      {/* Cinematic overlay */}
+      <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none" />
 
       {/* Bottom vignette */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 h-48 z-0 pointer-events-none"
         style={{
           background:
             "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)",
         }}
       />
 
-      {/* Hero Content - Added z-10 to ensure it sits above the canvas */}
-      <div className="hero-content absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6">
+      {/* Hero Content - Uses relative positioning for perfect flex-centering */}
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 w-full max-w-5xl mx-auto pt-16">
         
         {/* Location label */}
         <div
-          className="mb-8"
+          className="mb-6 md:mb-8"
           style={{
             opacity: mounted ? 1 : 0,
             transform: mounted ? "translateY(0)" : "translateY(20px)",
@@ -82,18 +85,17 @@ export default function HeroSection() {
           }}
         >
           <span className="text-label text-gold">
-            Uttarakhand · Himalayan Real Estate
+            Property in Uttarakhand · Premium Plots
           </span>
         </div>
 
         {/* Main headline */}
         <h1
           ref={titleRef}
-          className="display-xl text-ivory text-center mb-8 max-w-5xl"
+          className="display-xl text-ivory text-center mb-6 md:mb-8 w-full"
           style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
         >
           {"WHERE THE\nMOUNTAINS\nBECOME HOME.".split("\n").map((line, li) => (
-            /* Added pb-2 here to prevent overflow-hidden from cutting off font descenders */
             <span key={li} className="block overflow-hidden pb-2">
               {line.split(" ").map((word, wi) => (
                 <span
@@ -115,7 +117,7 @@ export default function HeroSection() {
 
         {/* Subtitle */}
         <p
-          className="text-mist text-base md:text-lg mb-12 max-w-md leading-relaxed"
+          className="text-mist text-sm sm:text-base md:text-lg mb-10 md:mb-12 max-w-md leading-relaxed px-4"
           style={{
             fontFamily: "var(--font-inter)",
             fontWeight: 300,
@@ -124,12 +126,12 @@ export default function HeroSection() {
             transition: "opacity 0.9s ease 1.2s, transform 0.9s ease 1.2s",
           }}
         >
-          Premium Properties in Uttarakhand
+          Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
         </p>
 
-        {/* CTAs */}
+        {/* CTAs - Mobile optimized to stack nicely */}
         <div
-          className="flex flex-col sm:flex-row items-center gap-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-6 sm:px-0"
           style={{
             opacity: mounted ? 1 : 0,
             transform: mounted ? "translateY(0)" : "translateY(30px)",
@@ -138,24 +140,24 @@ export default function HeroSection() {
         >
           <Link
             href="/properties"
-            className="btn-primary-filled text-xs px-10 py-4"
+            className="btn-primary-filled text-xs px-10 py-4 w-full sm:w-auto text-center"
             data-cursor="Explore"
           >
-            Explore Properties
+            Explore Plots
           </Link>
           <Link
-            href="/locations"
-            className="btn-ghost text-xs px-10 py-4"
+            href="/contact"
+            className="btn-ghost text-xs px-10 py-4 w-full sm:w-auto text-center"
             data-cursor="Discover"
           >
-            Discover Uttarakhand
+            Talk to an Advisor
           </Link>
         </div>
       </div>
 
       {/* Scroll indicator */}
       <div
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
+        className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
         style={{
           opacity: mounted ? 0.6 : 0,
           transition: "opacity 1s ease 2s",
