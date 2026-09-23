@@ -24,44 +24,40 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "Himalayan Estates — Premium Properties in Uttarakhand",
-    template: "%s | Himalayan Estates",
+    default: "Property In Uttarakhand — Premium Plots & Real Estate",
+    template: "%s | Property In Uttarakhand",
   },
   description:
-    "Discover luxury villas, mountain plots, and investment properties in Dehradun, Mussoorie, Rishikesh, Nainital, and across the Himalayan landscapes of Uttarakhand.",
+    "Discover premium 143-approved plots, highway land, and investment properties in Dehradun, Mussoorie, Rishikesh, and across Uttarakhand.",
   keywords: [
     "Uttarakhand properties",
-    "property in Dehradun",
-    "property in Mussoorie",
-    "plots in Uttarakhand",
-    "villas in Uttarakhand",
+    "plots in Dehradun",
+    "property in Uttarakhand",
+    "buy land in Uttarakhand",
     "real estate in Dehradun",
-    "mountain property Uttarakhand",
-    "Rishikesh property",
-    "Nainital property",
-    "Himalayan real estate",
+    "highway plots Uttarakhand",
   ],
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://himalayanestates.in",
-    siteName: "Himalayan Estates",
-    title: "Himalayan Estates — Own a View. Own the Mountains.",
+    url: "https://propertyinuttarakhand.com",
+    siteName: "Property In Uttarakhand",
+    title: "Property In Uttarakhand — Secure Your Legacy.",
     description:
-      "Premium properties in Uttarakhand's most extraordinary Himalayan locations.",
+      "Premium plotted developments and real estate investments in Uttarakhand.",
     images: [
       {
         url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80",
         width: 1200,
         height: 630,
-        alt: "Himalayan Estates - Mountain Properties",
+        alt: "Property In Uttarakhand",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Himalayan Estates — Own a View. Own the Mountains.",
-    description: "Premium properties in Uttarakhand's most extraordinary locations.",
+    title: "Property In Uttarakhand",
+    description: "Premium plotted developments in Uttarakhand.",
   },
   robots: {
     index: true,
