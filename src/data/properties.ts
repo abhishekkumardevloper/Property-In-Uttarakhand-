@@ -25,6 +25,145 @@ export interface Property {
 }
 
 export const properties: Property[] = [
+  // ==========================================
+  // YOUR NEW PLOT LISTINGS (DR REALTOR)
+  // ==========================================
+  {
+    id: "7",
+    name: "Bajrang Vatika",
+    slug: "bajrang-vatika",
+    location: "Shimla Bypass Road, Mednipur Badripur",
+    district: "Dehradun",
+    type: "plot",
+    price: 1750000, 
+    priceDisplay: "₹17,500 - ₹18,500 / sq. yard",
+    area: "100 - 200 sq yards",
+    areaValue: 100,
+    description:
+      "Uttarakhand's first Hanuman-themed plotted development offering a spiritual and luxurious lifestyle. Surrounded by the pristine Rajaji National Park, this gated society features daily Hanuman Chalisa sessions, premium amenities, and breathtaking views of Mussoorie and Chakrata hills. Developed by Dr. Realtor, it provides the perfect blend of devotion, nature, and modern living.",
+    shortDescription:
+      "Uttarakhand's first Hanuman-themed plotted development with premium amenities and Rajaji National Park views.",
+    images: [
+      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400&q=80",
+    ],
+    amenities: [
+      "Hanuman-Themed Development",
+      "Gated Society with 24/7 CCTV",
+      "Clubhouse & Swimming Pool",
+      "Mandir & Meditation Center",
+      "Vaastu-Compliant",
+      "Surrounded by Rajaji National Park",
+    ],
+    coordinates: [30.2831, 77.9821],
+    status: "available",
+    featured: true,
+    elevation: "1,400 ft",
+    views: "Mussoorie, Chakrata Hills & Forest",
+    tag: "Spiritual Living",
+  },
+  {
+    id: "8",
+    name: "The Friends Colony",
+    slug: "the-friends-colony",
+    location: "Delhi-Dehradun Expressway (NH-307), Khushalipur",
+    district: "Dehradun",
+    type: "plot",
+    price: 1750000,
+    priceDisplay: "₹17,500 / sq. yard",
+    area: "100 - 150 sq yards",
+    areaValue: 100,
+    description:
+      "Ready-to-move freehold plots located directly on the Delhi-Dehradun Expressway. Offering immediate possession and construction approvals, this project promises excellent future ROI due to its prime highway location. Situated just 20 minutes from ISBT Dehradun, it features 30-feet wide internal roads, underground drainage, and round-the-clock security surveillance. Developed by Dr. Realtor.",
+    shortDescription:
+      "Ready-to-move plots on Delhi-Dehradun Expressway offering immediate possession and high ROI.",
+    images: [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1400&q=80",
+    ],
+    amenities: [
+      "Immediate Possession",
+      "30-Feet Wide Internal Roads",
+      "Underground Drainage",
+      "24x7 Security Surveillance",
+      "Green Parks",
+      "Street Lighting",
+    ],
+    coordinates: [30.2520, 77.9510],
+    status: "available",
+    featured: true,
+    elevation: "1,400 ft",
+    views: "Highway & Greenery",
+    tag: "High ROI",
+  },
+  {
+    id: "9",
+    name: "Nature Green Valley 5",
+    slug: "nature-green-valley-5",
+    location: "Saharanpur-Dehradun Highway (NH-307), Ganeshpur",
+    district: "Dehradun",
+    type: "plot",
+    price: 1550000,
+    priceDisplay: "₹15,500 / sq. yard",
+    area: "Various Sizes",
+    areaValue: 100,
+    description:
+      "A legally converted, 143-approved residential plotted development situated directly next to Rajaji National Park. Enjoy zero-distance access to fresh teakwood forests, premium amenities, and a completely pollution-free environment just 20 km from Dehradun ISBT. This single-entry gated community features wide roads and dedicated parks. Developed by Dr. Realtor.",
+    shortDescription:
+      "143-approved residential plots near Rajaji National Park on Saharanpur-Dehradun Highway.",
+    images: [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?w=1400&q=80",
+    ],
+    amenities: [
+      "143 Approved (Residential)",
+      "0 km from Rajaji National Park",
+      "Single Entry Gated Community",
+      "30-Feet Wide Roads",
+      "Parks & Children's Playground",
+      "Pollution-Free Teakwood Forest",
+    ],
+    coordinates: [30.2210, 77.9230],
+    status: "available",
+    featured: true,
+    elevation: "1,400 ft",
+    views: "Rajaji National Park Forests",
+    tag: "Nature Living",
+  },
+  {
+    id: "10",
+    name: "Radheshyam Enclave",
+    slug: "radheshyam-enclave",
+    location: "Kalyanpur / HinduWala",
+    district: "Dehradun",
+    type: "plot",
+    price: 1800000,
+    priceDisplay: "₹18,000 - ₹30,000 / sq. yard",
+    area: "100 - 600 sq yards",
+    areaValue: 100,
+    description:
+      "A highly premium gated society located just 50 meters from the Paonta Sahib Highway, offering large, customizable plots ranging from 100 to 600 sq. yards. Features excellent connectivity to the Jhajhra-Asharodi elevated highway, Graphic Era University, and top hospitals. Offers park-facing, corner, and 2-side open options. Developed by Dr. Realtor.",
+    shortDescription:
+      "Premium gated society plots near Paonta Sahib Highway with exceptional connectivity and large sizes.",
+    images: [
+      "https://images.unsplash.com/photo-1585543805890-6051f7829f98?w=1400&q=80",
+    ],
+    amenities: [
+      "50 Meters from Highway",
+      "Near Graphic Era University & Hospitals",
+      "30-40 Feet Wide Roads",
+      "Park Facing & Corner Plots",
+      "2-Side Open Options",
+      "Premium Gated Society",
+    ],
+    coordinates: [30.3420, 77.9410],
+    status: "available",
+    featured: true,
+    elevation: "1,500 ft",
+    views: "City & Mountains",
+    tag: "Premium Options",
+  },
+
+  // ==========================================
+  // EXISTING PROPERTIES
+  // ==========================================
   {
     id: "1",
     name: "Mussoorie Mountain Villa",
