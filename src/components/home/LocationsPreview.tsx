@@ -1,3 +1,4 @@
+// src/components/home/LocationsPreview.tsx
 "use client";
 
 import Image from "next/image";
@@ -9,20 +10,15 @@ export default function LocationsPreview() {
   const preview = locations.slice(0, 4);
 
   return (
-    <section
-      className="py-20 lg:py-32 relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(180deg, var(--color-charcoal) 0%, var(--color-mountain-dark) 100%)",
-      }}
-    >
+    <section className="py-20 lg:py-32 relative overflow-hidden bg-[#111111]">
       <div className="container-custom px-4 lg:px-8">
+        
         {/* Header */}
         <ScrollReveal className="text-center mb-12 lg:mb-16">
-          <span className="text-label text-gold block mb-2 tracking-[0.2em]">Destinations</span>
+          <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Destinations</span>
           <div className="gold-divider mx-auto mb-6" />
           <h2
-            className="display-md text-ivory mb-4 leading-tight drop-shadow-sm"
+            className="text-4xl md:text-5xl lg:text-6xl text-ivory mb-4 leading-tight drop-shadow-sm"
             style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
           >
             Extraordinary
@@ -44,8 +40,8 @@ export default function LocationsPreview() {
               <Link
                 href="/locations"
                 data-cursor="Explore"
-                className="group block relative overflow-hidden rounded-lg w-full h-full"
-                style={{ aspectRatio: "3/4" }}
+                // Fixed: using Tailwind aspect ratio instead of inline style to prevent mobile collapse
+                className="group block relative overflow-hidden rounded-lg w-full aspect-[3/4] sm:aspect-[4/5] bg-gray-900"
               >
                 {/* Image */}
                 <Image
@@ -56,29 +52,14 @@ export default function LocationsPreview() {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                 />
 
-                {/* Gradient Overlay for Readability */}
-                <div
-                  className="absolute inset-0 z-10 transition-opacity duration-500"
-                  style={{
-                    background:
-                      "linear-gradient(180deg, transparent 30%, rgba(17,17,17,0.7) 65%, rgba(17,17,17,0.95) 100%)",
-                  }}
-                />
+                {/* Always-on gradient for text readability */}
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500" />
 
-                {/* Hover fog effect */}
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-700 z-10 pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(200,205,208,0.4) 0%, transparent 60%)",
-                  }}
-                />
-
-                {/* Content - Smooth translate hover effect */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-20 flex flex-col justify-end transform transition-transform duration-500 translate-y-6 group-hover:translate-y-0">
+                {/* Content */}
+                <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 z-20 flex flex-col justify-end">
                   <p
-                    className="text-label text-gold mb-2 opacity-90"
-                    style={{ fontSize: "9px" }}
+                    className="text-gold mb-2 opacity-90 tracking-widest uppercase text-[10px]"
+                    style={{ fontFamily: "var(--font-inter)" }}
                   >
                     {location.elevation}
                   </p>
@@ -90,8 +71,8 @@ export default function LocationsPreview() {
                     {location.name}
                   </h3>
                   
-                  {/* Tagline reveals smoothly on hover */}
-                  <div className="max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-500 overflow-hidden mt-2">
+                  {/* Tagline */}
+                  <div className="max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-500 overflow-hidden mt-1">
                     <p
                       className="text-stone/90 text-xs leading-relaxed line-clamp-2"
                       style={{ fontFamily: "var(--font-inter)" }}
@@ -106,7 +87,7 @@ export default function LocationsPreview() {
         </div>
 
         <ScrollReveal className="text-center mt-12 lg:mt-16">
-          <Link href="/locations" className="btn-ghost text-xs w-full sm:w-auto inline-flex justify-center" data-cursor="Discover">
+          <Link href="/locations" className="btn-ghost text-xs w-full sm:w-auto inline-flex justify-center uppercase tracking-widest">
             Discover All Locations
           </Link>
         </ScrollReveal>
