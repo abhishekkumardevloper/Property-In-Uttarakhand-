@@ -6,7 +6,8 @@ export default function Footer() {
 
   return (
     <footer
-      className="relative overflow-hidden"
+      // Added mt-20 to push the footer down and prevent overlap with the buttons above it
+      className="relative overflow-hidden mt-20"
       style={{ background: "var(--color-mountain-dark)" }}
     >
       {/* Top gradient line */}
@@ -23,22 +24,20 @@ export default function Footer() {
           
           {/* Brand */}
           <div className="lg:col-span-4 lg:pr-12">
-            {/* Removed the conflicting 'flex' class here */}
             <Link href="/" className="inline-flex flex-col leading-none mb-6">
               <span
-                className="font-heading text-3xl font-light tracking-wider text-ivory"
+                className="font-heading text-3xl font-light tracking-wider text-ivory uppercase"
                 style={{ fontFamily: "var(--font-cormorant)" }}
               >
-                HIMALAYAN
+                Property In
               </span>
-              <span className="text-label text-gold mt-1">ESTATES</span>
+              <span className="text-label text-gold mt-1">UTTARAKHAND</span>
             </Link>
             <p
               className="text-stone text-sm leading-relaxed mb-8"
               style={{ fontFamily: "var(--font-inter)" }}
             >
-              Premium properties in Uttarakhand's most extraordinary Himalayan
-              locations. We help people find places.
+              Premium plotted developments and real estate investments in Uttarakhand's most extraordinary locations. We help you find the perfect plot.
             </p>
             <div className="flex items-center gap-4">
               <Link
@@ -70,9 +69,9 @@ export default function Footer() {
             <h4 className="text-label text-gold mb-6">Properties</h4>
             <ul className="space-y-4">
               {[
-                { label: "Luxury Villas", href: "/properties" },
-                { label: "Mountain Plots", href: "/properties" },
-                { label: "Holiday Homes", href: "/properties" },
+                { label: "Premium Plots", href: "/properties" },
+                { label: "Highway Land", href: "/properties" },
+                { label: "Gated Societies", href: "/properties" },
                 { label: "Commercial", href: "/properties" },
                 { label: "Investment Land", href: "/properties" },
               ].map((item) => (
@@ -121,21 +120,23 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <Phone size={14} className="text-gold mt-1 shrink-0" />
                 <span className="text-stone text-sm" style={{ fontFamily: "var(--font-inter)" }}>
-                  +91 99999 99999
+                  +91 92895 33826
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail size={14} className="text-gold mt-1 shrink-0" />
                 <span className="text-stone text-sm" style={{ fontFamily: "var(--font-inter)" }}>
-                  info@himalayanestates.in
+                  info@propertyinuttarakhand.com
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin size={14} className="text-gold mt-1 shrink-0" />
                 <span className="text-stone text-sm leading-relaxed" style={{ fontFamily: "var(--font-inter)" }}>
-                  Race Course Road, Dehradun,
+                  2nd Floor, Building No.30, 
                   <br />
-                  Uttarakhand — 248001
+                  The Vedas Tower, Ballupur Chowk,
+                  <br />
+                  Dehradun, Uttarakhand - 248001
                 </span>
               </li>
             </ul>
@@ -156,7 +157,7 @@ export default function Footer() {
             className="text-stone text-xs"
             style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.05em" }}
           >
-            © {currentYear} Himalayan Estates. All rights reserved.
+            © {currentYear} Property in Uttarakhand. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             {["Privacy Policy", "Terms of Use", "Disclaimer"].map((item) => (
