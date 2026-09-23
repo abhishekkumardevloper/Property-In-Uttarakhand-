@@ -9,7 +9,7 @@ const MountainScene = dynamic(() => import("@/components/3d/MountainScene"), {
   ssr: false,
   loading: () => (
     <div
-      className="absolute inset-0 -z-10"
+      className="absolute inset-0"
       style={{
         background:
           "linear-gradient(180deg, #0d1f17 0%, #1e3a2a 50%, #111111 100%)",
@@ -41,8 +41,8 @@ export default function HeroSection() {
       style={{ height: "100dvh", minHeight: "600px" }}
     >
       
-      {/* 3D Mountain Background */}
-      <div className="absolute inset-0 -z-10">
+      {/* LAYER 1: 3D Mountain Background (z-0) */}
+      <div className="absolute inset-0 z-0">
         {mounted && (
           <Suspense
             fallback={
@@ -60,20 +60,20 @@ export default function HeroSection() {
         )}
       </div>
 
-      {/* Cinematic overlay */}
-      <div className="absolute inset-0 z-0 bg-black/30 pointer-events-none" />
+      {/* LAYER 2: Cinematic overlay (z-10) */}
+      <div className="absolute inset-0 z-10 bg-black/30 pointer-events-none" />
 
-      {/* Bottom vignette */}
+      {/* Bottom vignette (z-10) */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 z-0 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none"
         style={{
           background:
             "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)",
         }}
       />
 
-      {/* Hero Content - Uses relative positioning for perfect flex-centering */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 sm:px-6 w-full max-w-5xl mx-auto pt-16">
+      {/* LAYER 3: Hero Content (z-20) */}
+      <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 sm:px-6 w-full max-w-5xl mx-auto pt-16">
         
         {/* Location label */}
         <div
@@ -84,7 +84,7 @@ export default function HeroSection() {
             transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s",
           }}
         >
-          <span className="text-label text-gold">
+          <span className="text-label text-gold drop-shadow-md">
             Property in Uttarakhand · Premium Plots
           </span>
         </div>
@@ -92,7 +92,7 @@ export default function HeroSection() {
         {/* Main headline */}
         <h1
           ref={titleRef}
-          className="display-xl text-ivory text-center mb-6 md:mb-8 w-full"
+          className="display-xl text-ivory text-center mb-6 md:mb-8 w-full drop-shadow-lg"
           style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
         >
           {"WHERE THE\nMOUNTAINS\nBECOME HOME.".split("\n").map((line, li) => (
@@ -117,7 +117,7 @@ export default function HeroSection() {
 
         {/* Subtitle */}
         <p
-          className="text-mist text-sm sm:text-base md:text-lg mb-10 md:mb-12 max-w-md leading-relaxed px-4"
+          className="text-mist text-sm sm:text-base md:text-lg mb-10 md:mb-12 max-w-md leading-relaxed px-4 drop-shadow-md"
           style={{
             fontFamily: "var(--font-inter)",
             fontWeight: 300,
@@ -129,7 +129,7 @@ export default function HeroSection() {
           Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
         </p>
 
-        {/* CTAs - Mobile optimized to stack nicely */}
+        {/* CTAs */}
         <div
           className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-6 sm:px-0"
           style={{
