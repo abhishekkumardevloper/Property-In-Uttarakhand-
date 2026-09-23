@@ -18,10 +18,6 @@
   --color-deep-charcoal: #0a0a0a;
   --color-warm-gray: #2a2a2a;
 
-  /* Font families */
-  --font-family-heading: 'Cormorant Garamond', Georgia, serif;
-  --font-family-body: 'Inter', system-ui, sans-serif;
-
   /* ---- Spacing ---- */
   --spacing-18: 4.5rem;
   --spacing-88: 22rem;
@@ -32,8 +28,6 @@
    CSS CUSTOM PROPERTIES (for non-Tailwind use)
    ============================================ */
 :root {
-  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
-  --font-inter: 'Inter', system-ui, sans-serif;
   --nav-height: 80px;
 }
 
@@ -50,12 +44,13 @@
 
 html {
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
-  background-color: #111111;
-  color: #f4ede0;
-  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--color-charcoal);
+  color: var(--color-ivory);
+  font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -69,10 +64,10 @@ body {
   width: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #111111;
+  background: var(--color-charcoal);
 }
 ::-webkit-scrollbar-thumb {
-  background: #c9a84c;
+  background: var(--color-gold);
   border-radius: 2px;
 }
 
@@ -114,18 +109,18 @@ body.cursor-hover .cursor-dot {
 body.cursor-hover .cursor-ring {
   width: 60px;
   height: 60px;
-  border-color: #c9a84c;
+  border-color: var(--color-gold);
 }
 
 /* ============================================
    TYPOGRAPHY UTILITIES
    ============================================ */
 .font-heading {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
 }
 
 .display-xl {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(3rem, 8vw, 8rem);
   line-height: 0.95;
   font-weight: 300;
@@ -133,7 +128,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .display-lg {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(2.5rem, 6vw, 6rem);
   line-height: 0.95;
   font-weight: 300;
@@ -141,7 +136,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .display-md {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(2rem, 4vw, 4rem);
   line-height: 1.05;
   font-weight: 300;
@@ -149,14 +144,14 @@ body.cursor-hover .cursor-ring {
 }
 
 .display-sm {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(1.5rem, 3vw, 3rem);
   line-height: 1.1;
   font-weight: 400;
 }
 
 .text-label {
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.6875rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -210,10 +205,10 @@ body.cursor-hover .cursor-ring {
 
 .btn-primary {
   background: transparent;
-  border: 1px solid #c9a84c;
-  color: #c9a84c;
+  border: 1px solid var(--color-gold);
+  color: var(--color-gold);
   padding: 14px 32px;
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -226,16 +221,16 @@ body.cursor-hover .cursor-ring {
 }
 
 .btn-primary:hover {
-  background: #c9a84c;
-  color: #111111;
+  background: var(--color-gold);
+  color: var(--color-charcoal);
 }
 
 .btn-primary-filled {
-  background: #c9a84c;
-  border: 1px solid #c9a84c;
-  color: #111111;
+  background: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  color: var(--color-charcoal);
   padding: 14px 32px;
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -248,8 +243,8 @@ body.cursor-hover .cursor-ring {
 }
 
 .btn-primary-filled:hover {
-  background: #e8c97a;
-  border-color: #e8c97a;
+  background: var(--color-gold-light);
+  border-color: var(--color-gold-light);
 }
 
 .btn-ghost {
@@ -257,7 +252,7 @@ body.cursor-hover .cursor-ring {
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.8);
   padding: 14px 32px;
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -338,7 +333,7 @@ body.cursor-hover .cursor-ring {
    ============================================ */
 .nav-link {
   position: relative;
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -353,7 +348,7 @@ body.cursor-hover .cursor-ring {
   left: 0;
   width: 0;
   height: 1px;
-  background: #c9a84c;
+  background: var(--color-gold);
   transition: width 0.3s ease;
 }
 
@@ -367,7 +362,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .nav-link.active {
-  color: #c9a84c;
+  color: var(--color-gold);
 }
 
 /* ============================================
@@ -391,7 +386,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .mobile-menu-link {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(2.5rem, 8vw, 5rem);
   font-weight: 300;
   color: rgba(255, 255, 255, 0.7);
@@ -407,7 +402,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .mobile-menu-link:hover {
-  color: #c9a84c;
+  color: var(--color-gold);
 }
 
 .mobile-menu.open .mobile-menu-link:nth-child(1) { transition-delay: 0.1s; }
@@ -451,7 +446,7 @@ body.cursor-hover .cursor-ring {
   border-radius: 4px;
   padding: 14px 18px;
   color: white;
-  font-family: var(--font-inter);
+  font-family: var(--font-inter), system-ui, sans-serif;
   font-size: 0.875rem;
   width: 100%;
   outline: none;
@@ -459,7 +454,7 @@ body.cursor-hover .cursor-ring {
 }
 
 .form-input:focus {
-  border-color: #c9a84c;
+  border-color: var(--color-gold);
   background: rgba(201, 168, 76, 0.04);
 }
 
@@ -478,7 +473,7 @@ body.cursor-hover .cursor-ring {
 .gold-divider {
   width: 60px;
   height: 1px;
-  background: #c9a84c;
+  background: var(--color-gold);
   margin: 24px 0;
 }
 
@@ -499,10 +494,10 @@ body.cursor-hover .cursor-ring {
    STAT COUNTER
    ============================================ */
 .stat-number {
-  font-family: var(--font-cormorant);
+  font-family: var(--font-cormorant), Georgia, serif;
   font-size: clamp(3rem, 6vw, 5rem);
   font-weight: 300;
-  color: #c9a84c;
+  color: var(--color-gold);
   line-height: 1;
 }
 
@@ -535,10 +530,10 @@ body.cursor-hover .cursor-ring {
 /* ============================================
    UTILITY COLOR CLASSES
    ============================================ */
-.text-gold { color: #c9a84c; }
-.text-ivory { color: #f4ede0; }
-.text-mist { color: #c8cdd0; }
-.text-stone { color: #8a9296; }
+.text-gold { color: var(--color-gold); }
+.text-ivory { color: var(--color-ivory); }
+.text-mist { color: var(--color-mist); }
+.text-stone { color: var(--color-stone); }
 
 /* ============================================
    CANVAS
