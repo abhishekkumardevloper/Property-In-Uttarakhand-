@@ -1,142 +1,266 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
-const MountainScene = dynamic(() => import("@/components/3d/MountainScene"), {
+type SceneProps = { started: boolean; onReady?: () => void };
+
+const MountainScene = dynamic<SceneProps>(() => import("@/components/3d/MountainScene"), {
   ssr: false,
-  loading: () => (
-    <div
-      className="absolute inset-0"
-      style={{
-        background:
-          "linear-gradient(180deg, #0d1f17 0%, #1e3a2a 50%, #111111 100%)",
-      }}
-    />
-  ),
 });
 
-export default function HeroSection() {
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const [mounted, setMounted] = useState(false);
+/* ---- timing (ms) ---- */
+const MIN_CLOSED = 1800; // doors stay shut at least this long (title is readable)
+const FAILSAFE = 6000; // open anyway if the 3D scene is slow / unavailable
+const OPEN_DURATION = 2000; // door slide
+const REVEAL_AFTER_OPEN = 1100; // headline starts once doors are ~half open
 
-  useEffect(() => {
-    setMounted(true);
-    // Stagger animate words
-    const words = titleRef.current?.querySelectorAll(".word");
-    if (!words) return;
-    words.forEach((word, i) => {
-      setTimeout(() => {
-        (word as HTMLElement).style.opacity = "1";
-        (word as HTMLElement).style.transform = "translateY(0)";
-      }, 200 + i * 120);
-    });
-  }, []);
+const EASE_DOOR = "cubic-bezier(0.76, 0, 0.24, 1)";
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
+/* headline words with a global index for the stagger */
+let n = 0;
+const HEADLINE = ["WHERE THE", "MOUNTAINS", "BECOME HOME."].map((line) =>
+  line.split(" ").map((w) => ({ w, i: n++ }))
+);
+
+/* ------------------------------------------------------------------ */
+/*  One half of the intro doors                                        */
+/* ------------------------------------------------------------------ */
+
+function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; armed: boolean }) {
+  const isLeft = side === "left";
   return (
-    <section 
-      className="relative w-full overflow-hidden flex flex-col items-center justify-center" 
-      style={{ height: "100dvh", minHeight: "600px" }}
+    <div
+      className="absolute top-0 bottom-0 w-1/2 overflow-hidden"
+      style={{
+        [side]: 0,
+        background: isLeft
+          ? "linear-gradient(100deg, #08130e 0%, #0f2119 70%, #14291f 100%)"
+          : "linear-gradient(260deg, #08130e 0%, #0f2119 70%, #14291f 100%)",
+        transform: open ? `translateX(${isLeft ? "-100%" : "100%"})` : "translateX(0)",
+        transition: `transform ${OPEN_DURATION}ms ${EASE_DOOR}`,
+        boxShadow: isLeft ? "40px 0 90px rgba(0,0,0,0.55)" : "-40px 0 90px rgba(0,0,0,0.55)",
+        willChange: "transform",
+      }}
     >
-      
-      {/* LAYER 1: 3D Mountain Background (z-0) */}
-      <div className="absolute inset-0 z-0">
-        {mounted && (
-          <Suspense
-            fallback={
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, #0d1f17 0%, #1e3a2a 50%, #111111 100%)",
-                }}
-              />
-            }
+      {/* Full-width face; each door shows its own half, so the title splits at the seam */}
+      <div
+        className="absolute top-0 bottom-0 flex flex-col items-center justify-center text-center"
+        style={{ width: "200%", [side]: 0 }}
+      >
+        {/* ridge silhouette */}
+        <svg
+          className="absolute bottom-0 left-0 w-full h-[38%]"
+          viewBox="0 0 1200 300"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M0 300 L0 210 L120 150 L210 190 L340 90 L450 170 L560 120 L640 60 L720 130 L830 100 L940 175 L1050 130 L1200 200 L1200 300 Z"
+            fill="rgba(255,255,255,0.035)"
+          />
+          <path
+            d="M0 300 L0 250 L160 200 L300 240 L470 170 L620 235 L780 185 L930 240 L1080 205 L1200 245 L1200 300 Z"
+            fill="rgba(255,255,255,0.05)"
+          />
+        </svg>
+
+        <div className="relative px-6">
+          <p className="text-label text-gold mb-5 md:mb-7">Premium Plots · Himalayan Estates</p>
+          <h2
+            className="text-ivory"
+            style={{
+              fontFamily: "var(--font-cormorant)",
+              fontWeight: 300,
+              fontSize: "clamp(2.4rem, 9.5vw, 7.5rem)",
+              lineHeight: 0.98,
+              letterSpacing: "0.04em",
+            }}
           >
-            <MountainScene />
-          </Suspense>
-        )}
+            PROPERTY IN
+            <br />
+            UTTARAKHAND
+          </h2>
+
+          {/* progress line — grows from the seam outward */}
+          <div className="mx-auto mt-8 md:mt-10 h-px w-40 sm:w-56 bg-white/10 overflow-hidden">
+            <div
+              className="h-full w-full bg-gold"
+              style={{
+                transform: armed ? "scaleX(1)" : "scaleX(0)",
+                transformOrigin: "center",
+                transition: `transform ${MIN_CLOSED - 200}ms cubic-bezier(0.65, 0, 0.35, 1)`,
+              }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* LAYER 2: Cinematic overlay (z-10) */}
-      <div className="absolute inset-0 z-10 bg-black/30 pointer-events-none" />
-
-      {/* Bottom vignette (z-10) */}
+      {/* glowing seam */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none"
+        className="absolute top-0 bottom-0 w-px"
         style={{
+          [isLeft ? "right" : "left"]: 0,
           background:
-            "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)",
+            "linear-gradient(180deg, transparent 0%, rgba(201,169,110,0.7) 50%, transparent 100%)",
+          opacity: open ? 0 : 1,
+          transition: "opacity 400ms ease",
         }}
       />
+    </div>
+  );
+}
 
-      {/* LAYER 3: Hero Content (z-20) */}
-      <div className="relative z-20 flex flex-col items-center justify-center text-center px-4 sm:px-6 w-full max-w-5xl mx-auto pt-16">
-        
-        {/* Location label */}
-        <div
-          className="mb-6 md:mb-8"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(20px)",
-            transition: "opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s",
-          }}
-        >
-          <span className="text-label text-gold drop-shadow-md">
-            Property in Uttarakhand · Premium Plots
-          </span>
+/* ------------------------------------------------------------------ */
+/*  Hero                                                               */
+/* ------------------------------------------------------------------ */
+
+export default function HeroSection() {
+  const [armed, setArmed] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
+  const [minElapsed, setMinElapsed] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const handleReady = useCallback(() => setSceneReady(true), []);
+
+  // boot: timers, reduced-motion shortcut
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setOpen(true);
+      setRevealed(true);
+      setDone(true);
+      return;
+    }
+    const raf = requestAnimationFrame(() => setArmed(true));
+    const t1 = setTimeout(() => setMinElapsed(true), MIN_CLOSED);
+    const t2 = setTimeout(() => setSceneReady(true), FAILSAFE);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  // open when the 3D scene is ready AND the title has been seen
+  useEffect(() => {
+    if (sceneReady && minElapsed) setOpen(true);
+  }, [sceneReady, minElapsed]);
+
+  // after opening: reveal text, then remove doors
+  useEffect(() => {
+    if (!open || done) return;
+    const t1 = setTimeout(() => setRevealed(true), REVEAL_AFTER_OPEN);
+    const t2 = setTimeout(() => setDone(true), OPEN_DURATION + 200);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [open, done]);
+
+  // lock scroll while the intro plays
+  useEffect(() => {
+    if (done) return;
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = prev;
+    };
+  }, [done]);
+
+  const fadeUp = (delay: number, distance = 30) => ({
+    opacity: revealed ? 1 : 0,
+    transform: revealed ? "translateY(0)" : `translateY(${distance}px)`,
+    transition: `opacity 0.9s ease ${delay}ms, transform 0.9s ${EASE_OUT} ${delay}ms`,
+  });
+
+  return (
+    <section
+      className="relative w-full overflow-hidden"
+      style={{ height: "100dvh", minHeight: "600px", background: "#0d1f17" }}
+    >
+      {/* LAYER 1 — 3D valley */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: "linear-gradient(180deg, #2c68b0 0%, #78aee0 40%, #4f9033 75%, #111111 100%)",
+        }}
+      >
+        <MountainScene started={open} onReady={handleReady} />
+      </div>
+
+      {/* LAYER 2 — legibility + cinematic grade */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(6,18,14,0.55) 0%, rgba(6,18,14,0.18) 42%, rgba(6,18,14,0) 62%)",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none"
+        style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
+      />
+
+      {/* LAYER 3 — hero content */}
+      <div className="relative z-20 h-full w-full max-w-5xl mx-auto flex flex-col items-center justify-between md:justify-center text-center px-4 sm:px-6 pt-24 pb-28 md:pt-16 md:pb-0">
+        <div className="flex flex-col items-center w-full">
+          <div className="mb-5 md:mb-8" style={fadeUp(0, 20)}>
+            <span className="text-label text-gold" style={{ textShadow: "0 1px 14px rgba(0,0,0,0.6)" }}>
+              Property in Uttarakhand · Premium Plots
+            </span>
+          </div>
+
+          <h1
+            className="text-ivory text-center w-full mb-5 md:mb-8"
+            style={{
+              fontFamily: "var(--font-cormorant)",
+              fontWeight: 300,
+              fontSize: "clamp(2.5rem, 8.6vw, 6.6rem)",
+              lineHeight: 0.98,
+              letterSpacing: "0.01em",
+              textShadow: "0 2px 34px rgba(0,0,0,0.4)",
+            }}
+          >
+            {HEADLINE.map((line, li) => (
+              <span key={li} className="block overflow-hidden pb-2">
+                {line.map(({ w, i }) => (
+                  <span
+                    key={i}
+                    className="inline-block mr-[0.25em] last:mr-0"
+                    style={{
+                      opacity: revealed ? 1 : 0,
+                      transform: revealed ? "translateY(0)" : "translateY(105%)",
+                      transition: `opacity 0.9s ${EASE_OUT} ${i * 120}ms, transform 0.9s ${EASE_OUT} ${i * 120}ms`,
+                    }}
+                  >
+                    {w}
+                  </span>
+                ))}
+              </span>
+            ))}
+          </h1>
+
+          <p
+            className="text-mist text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2"
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontWeight: 300,
+              textShadow: "0 1px 18px rgba(0,0,0,0.55)",
+              ...fadeUp(750),
+            }}
+          >
+            Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
+          </p>
         </div>
 
-        {/* Main headline */}
-        <h1
-          ref={titleRef}
-          className="display-xl text-ivory text-center mb-6 md:mb-8 w-full drop-shadow-lg"
-          style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
-        >
-          {"WHERE THE\nMOUNTAINS\nBECOME HOME.".split("\n").map((line, li) => (
-            <span key={li} className="block overflow-hidden pb-2">
-              {line.split(" ").map((word, wi) => (
-                <span
-                  key={wi}
-                  className="word inline-block mr-[0.25em]"
-                  style={{
-                    opacity: 0,
-                    transform: "translateY(100%)",
-                    transition:
-                      "opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                >
-                  {word}
-                </span>
-              ))}
-            </span>
-          ))}
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          className="text-mist text-sm sm:text-base md:text-lg mb-10 md:mb-12 max-w-md leading-relaxed px-4 drop-shadow-md"
-          style={{
-            fontFamily: "var(--font-inter)",
-            fontWeight: 300,
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(30px)",
-            transition: "opacity 0.9s ease 1.2s, transform 0.9s ease 1.2s",
-          }}
-        >
-          Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
-        </p>
-
-        {/* CTAs */}
         <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-6 sm:px-0"
-          style={{
-            opacity: mounted ? 1 : 0,
-            transform: mounted ? "translateY(0)" : "translateY(30px)",
-            transition: "opacity 0.9s ease 1.5s, transform 0.9s ease 1.5s",
-          }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-2 sm:px-0 md:mt-12"
+          style={fadeUp(1000)}
         >
           <Link
             href="/properties"
@@ -157,21 +281,22 @@ export default function HeroSection() {
 
       {/* Scroll indicator */}
       <div
-        className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
-        style={{
-          opacity: mounted ? 0.6 : 0,
-          transition: "opacity 1s ease 2s",
-        }}
+        className="absolute bottom-5 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
+        style={{ opacity: revealed ? 0.65 : 0, transition: "opacity 1s ease 1.4s" }}
       >
         <span className="text-label text-stone" style={{ fontSize: "9px" }}>
           Scroll
         </span>
-        <ChevronDown
-          size={16}
-          className="text-stone animate-bounce"
-          style={{ animationDuration: "2s" }}
-        />
+        <ChevronDown size={16} className="text-stone animate-bounce" style={{ animationDuration: "2s" }} />
       </div>
+
+      {/* LAYER 4 — intro doors: two halves slide apart to reveal the valley */}
+      {!done && (
+        <div className="absolute inset-0 z-40" aria-hidden="true" style={{ pointerEvents: open ? "none" : "auto" }}>
+          <Door side="left" open={open} armed={armed} />
+          <Door side="right" open={open} armed={armed} />
+        </div>
+      )}
     </section>
   );
 }
