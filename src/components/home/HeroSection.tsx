@@ -1,21 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import CloudLayer from "@/components/home/CloudLayer";
 
-type SceneProps = { started: boolean; onReady?: () => void };
+/* ------------------------------------------------------------------ */
+/*  YOUR MEDIA — drop real files into /public/hero/                    */
+/* ------------------------------------------------------------------ */
 
-const MountainScene = dynamic<SceneProps>(() => import("@/components/3d/MountainScene"), {
-  ssr: false,
-});
+/** Real photo of your plots / the mountains. 2400px wide, JPG or WebP, ideally under 400 KB. */
+const IMAGE_SRC = "/hero/hero.jpg";
+/** Optional portrait crop for phones (1080x1600 works well). Leave "" to reuse IMAGE_SRC. */
+const MOBILE_IMAGE_SRC = "";
+/** Optional looping background video (muted, 6–12 s, MP4/H.264, under ~4 MB). Leave "" for photo only. */
+const VIDEO_SRC = "";
+/** Which part of the photo stays in view when it is cropped to the screen (x y). */
+const FOCAL = "50% 58%";
 
-/* ---- timing (ms) ---- */
+/* ---- timing (ms) — the door timings are unchanged ---- */
 const MIN_CLOSED = 1800; // doors stay shut at least this long (title is readable)
-const FAILSAFE = 6000; // open anyway if the 3D scene is slow / unavailable
+const FAILSAFE = 6000; // open anyway if the media / clouds are slow
 const OPEN_DURATION = 2000; // door slide
-const REVEAL_AFTER_OPEN = 1100; // headline starts once doors are ~half open
+const CLOUD_START = 1300; // after the doors start opening, clouds begin to part
+const CLOUD_DURATION = 3800; // how long the clouds take to clear
+const REVEAL_AFTER_OPEN = 3000; // headline is written once the sky is about half clear
 
 const EASE_DOOR = "cubic-bezier(0.76, 0, 0.24, 1)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -128,17 +137,39 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
 
 export default function HeroSection() {
   const [armed, setArmed] = useState(false);
-  const [sceneReady, setSceneReady] = useState(false);
+  const [mediaReady, setMediaReady] = useState(false);
+  const [mediaFailed, setMediaFailed] = useState(false);
+  const [cloudsReady, setCloudsReady] = useState(false);
   const [minElapsed, setMinElapsed] = useState(false);
+  const [forceReady, setForceReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [done, setDone] = useState(false);
+  const [reduced, setReduced] = useState(false);
+  const [videoOn, setVideoOn] = useState(false);
 
-  const handleReady = useCallback(() => setSceneReady(true), []);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  const handleCloudsReady = useCallback(() => setCloudsReady(true), []);
+  const handleImgLoad = useCallback(() => setMediaReady(true), []);
+  const handleImgError = useCallback(() => {
+    setMediaFailed(true);
+    setMediaReady(true);
+  }, []);
+
+  // the image may already be in cache before React attached onLoad
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete) {
+      if (img.naturalWidth > 0) setMediaReady(true);
+      else handleImgError();
+    }
+  }, [handleImgError]);
 
   // boot: timers, reduced-motion shortcut
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setReduced(true);
       setOpen(true);
       setRevealed(true);
       setDone(true);
@@ -146,7 +177,7 @@ export default function HeroSection() {
     }
     const raf = requestAnimationFrame(() => setArmed(true));
     const t1 = setTimeout(() => setMinElapsed(true), MIN_CLOSED);
-    const t2 = setTimeout(() => setSceneReady(true), FAILSAFE);
+    const t2 = setTimeout(() => setForceReady(true), FAILSAFE);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(t1);
@@ -154,25 +185,27 @@ export default function HeroSection() {
     };
   }, []);
 
-  // open when the 3D scene is ready AND the title has been seen
+  // open when photo + clouds are ready AND the title has been seen
   useEffect(() => {
-    if (sceneReady && minElapsed) setOpen(true);
-  }, [sceneReady, minElapsed]);
+    if (((mediaReady && cloudsReady) || forceReady) && minElapsed) setOpen(true);
+  }, [mediaReady, cloudsReady, forceReady, minElapsed]);
 
-  // after opening: reveal text, then remove doors
+  // after opening: write the headline once the sky is about half clear…
   useEffect(() => {
-    if (!open || done) return;
-    const t1 = setTimeout(() => setRevealed(true), REVEAL_AFTER_OPEN);
-    const t2 = setTimeout(() => setDone(true), OPEN_DURATION + 300);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [open, done]);
+    if (!open) return;
+    const t = setTimeout(() => setRevealed(true), REVEAL_AFTER_OPEN);
+    return () => clearTimeout(t);
+  }, [open]);
 
-  // Block scrolling while the intro plays.
-  // (Toggling `overflow: hidden` on <html> makes the desktop scrollbar vanish and reappear,
-  //  which shifts the layout and makes the canvas flash — so we cancel scroll input instead.)
+  // …and remove the doors as soon as they have slid away
+  useEffect(() => {
+    if (!open) return;
+    const t = setTimeout(() => setDone(true), OPEN_DURATION + 300);
+    return () => clearTimeout(t);
+  }, [open]);
+
+  // Block scrolling while the doors move (cancel input instead of toggling overflow,
+  // which would make the desktop scrollbar vanish/reappear and shift the layout).
   useEffect(() => {
     if (done) return;
     const stop = (e: Event) => e.preventDefault();
@@ -202,17 +235,56 @@ export default function HeroSection() {
       className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px]"
       style={{ background: "#0d1f17" }}
     >
-      {/* LAYER 1 — 3D valley */}
+      {/* LAYER 1 — real photo (+ optional video). Slow push-in starts when the doors open. */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 overflow-hidden"
         style={{
-          background: "linear-gradient(180deg, #2c68b0 0%, #78aee0 40%, #4f9033 75%, #111111 100%)",
+          background: "linear-gradient(180deg, #2c68b0 0%, #78aee0 38%, #4f9033 72%, #14291f 100%)",
         }}
       >
-        <MountainScene started={open} onReady={handleReady} />
+        <div
+          className="absolute inset-0"
+          style={{
+            transform: open && !reduced ? "scale(1.04)" : reduced ? "scale(1)" : "scale(1.2)",
+            transition: "transform 14000ms cubic-bezier(0.22, 0.61, 0.36, 1)",
+            willChange: "transform",
+          }}
+        >
+          {!mediaFailed && (
+            <picture>
+              {MOBILE_IMAGE_SRC && <source media="(max-width: 767px)" srcSet={MOBILE_IMAGE_SRC} />}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                ref={imgRef}
+                src={IMAGE_SRC}
+                alt=""
+                decoding="async"
+                onLoad={handleImgLoad}
+                onError={handleImgError}
+                className="absolute inset-0 h-full w-full object-cover"
+                style={{ objectPosition: FOCAL }}
+              />
+            </picture>
+          )}
+          {VIDEO_SRC && !reduced && !mediaFailed && (
+            <video
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition: FOCAL, opacity: videoOn ? 1 : 0, transition: "opacity 1.2s ease" }}
+              src={VIDEO_SRC}
+              poster={IMAGE_SRC}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              onCanPlay={() => setVideoOn(true)}
+              onError={() => setVideoOn(false)}
+            />
+          )}
+        </div>
       </div>
 
-      {/* LAYER 2 — readability scrims (keep the headline legible on any part of the scene) */}
+      {/* LAYER 2 — readability scrims (keep the headline legible on any photo) */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
@@ -227,12 +299,24 @@ export default function HeroSection() {
             "radial-gradient(ellipse 78% 46% at 50% 38%, rgba(4,12,10,0.42) 0%, rgba(4,12,10,0.22) 55%, rgba(4,12,10,0) 100%)",
         }}
       />
+
+      {/* LAYER 3 — full-screen clouds: total cover first, then they part to reveal the photo */}
+      <div className="absolute inset-0 z-[15] pointer-events-none">
+        <CloudLayer
+          clearing={open}
+          delay={CLOUD_START}
+          duration={CLOUD_DURATION}
+          instant={reduced}
+          onReady={handleCloudsReady}
+        />
+      </div>
+
       <div
-        className="absolute bottom-0 left-0 right-0 h-40 md:h-48 z-10 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 h-40 md:h-48 z-[16] pointer-events-none"
         style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
       />
 
-      {/* LAYER 3 — hero content */}
+      {/* LAYER 4 — hero content */}
       <div className="relative z-20 h-full w-full max-w-5xl mx-auto flex flex-col items-center justify-between md:justify-center text-center px-5 sm:px-6 pt-24 pb-24 sm:pb-28 md:pt-16 md:pb-0">
         <div className="flex flex-col items-center w-full">
           {/* label pill */}
@@ -340,7 +424,7 @@ export default function HeroSection() {
         <ChevronDown size={16} className="text-stone animate-bounce" style={{ animationDuration: "2s" }} />
       </div>
 
-      {/* LAYER 4 — intro doors: two halves slide apart to reveal the valley */}
+      {/* LAYER 5 — intro doors: two halves slide apart (unchanged) */}
       {!done && (
         <div className="absolute inset-0 z-40" aria-hidden="true" style={{ pointerEvents: open ? "none" : "auto" }}>
           <Door side="left" open={open} armed={armed} />
@@ -350,3 +434,4 @@ export default function HeroSection() {
     </section>
   );
 }
+
