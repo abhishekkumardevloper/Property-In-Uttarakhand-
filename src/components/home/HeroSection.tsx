@@ -10,7 +10,7 @@ import CloudLayer from "@/components/home/CloudLayer";
 /* ------------------------------------------------------------------ */
 
 /** Real photo of your plots / the mountains. 2400px wide, JPG or WebP, ideally under 400 KB. */
-const IMAGE_SRC = "/hero/hero.jpg";
+const IMAGE_SRC = "/hero/hero.png";
 /** Optional portrait crop for phones (1080x1600 works well). Leave "" to reuse IMAGE_SRC. */
 const MOBILE_IMAGE_SRC = "";
 /** Optional looping background video (muted, 6–12 s, MP4/H.264, under ~4 MB). Leave "" for photo only. */
