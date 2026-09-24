@@ -6,9 +6,8 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 export default function FinalCTA() {
   return (
     <section
-      // Increased bottom padding (pb-32 lg:pb-48) to guarantee space for the buttons and prevent footer overlap
-      className="relative pt-24 pb-32 lg:pt-32 lg:pb-48 overflow-hidden flex flex-col items-center justify-center min-h-[80vh]"
-      style={{ background: "var(--color-mountain-dark)" }}
+      className="relative py-24 lg:py-40 flex flex-col items-center justify-center w-full"
+      style={{ background: "var(--color-mountain-dark)", minHeight: "75vh" }}
     >
       {/* Mountain silhouette background */}
       <div
@@ -18,7 +17,6 @@ export default function FinalCTA() {
             "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1400&q=40')",
           backgroundSize: "cover",
           backgroundPosition: "center 70%",
-          transition: "transform 10s ease-out",
         }}
       />
       
@@ -41,7 +39,7 @@ export default function FinalCTA() {
       />
 
       {/* Main Content Container */}
-      <div className="container-custom relative z-10 text-center px-4 flex flex-col items-center">
+      <div className="container-custom relative z-10 text-center px-4 flex flex-col items-center w-full">
         
         <ScrollReveal direction="up" className="w-full flex flex-col items-center">
           <span className="text-label text-gold block mb-3 tracking-[0.2em] uppercase text-[10px] md:text-xs">
@@ -71,7 +69,7 @@ export default function FinalCTA() {
 
         <ScrollReveal direction="up" delay={0.3}>
           <h2
-            className="text-5xl md:text-6xl lg:text-8xl mb-8 lg:mb-16 drop-shadow-lg leading-none"
+            className="text-5xl md:text-6xl lg:text-8xl mb-8 lg:mb-12 drop-shadow-lg leading-none"
             style={{
               fontFamily: "var(--font-cormorant)",
               fontWeight: 300,
@@ -83,34 +81,33 @@ export default function FinalCTA() {
           </h2>
         </ScrollReveal>
 
-        <ScrollReveal direction="up" delay={0.4}>
-          <p
-            className="text-stone max-w-xl mx-auto leading-relaxed mb-12 text-sm md:text-base lg:text-lg px-4 sm:px-0 drop-shadow-md"
-            style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
-          >
-            Whether you are searching for a premium highway plot, a nature-centric gated community, or a high-ROI investment — your journey to own a piece of Devbhoomi begins with a single conversation.
-          </p>
-        </ScrollReveal>
+        {/* 
+          FIX: Removed ScrollReveal from the bottom paragraph and buttons.
+          This guarantees they will always be visible and won't get stuck hiding above the footer.
+        */}
+        <p
+          className="text-stone max-w-xl mx-auto leading-relaxed mb-12 text-sm md:text-base lg:text-lg px-4 sm:px-0 drop-shadow-md"
+          style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
+        >
+          Whether you are searching for a premium highway plot, a nature-centric gated community, or a high-ROI investment — your journey to own a piece of Devbhoomi begins with a single conversation.
+        </p>
 
-        {/* Buttons - Stack on mobile, side-by-side on larger screens */}
-        <ScrollReveal direction="up" delay={0.5} className="w-full">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 lg:gap-6 w-full sm:w-auto px-6 sm:px-0">
-            <Link
-              href="/properties"
-              className="btn-primary-filled text-xs lg:text-sm px-10 py-4 lg:px-12 lg:py-5 w-full sm:w-auto text-center tracking-widest shadow-[0_10px_30px_rgba(201,168,76,0.2)] hover:shadow-[0_15px_40px_rgba(201,168,76,0.4)]"
-              data-cursor="Explore"
-            >
-              Explore Plots
-            </Link>
-            <Link
-              href="/contact"
-              className="btn-ghost text-xs lg:text-sm px-10 py-4 lg:px-12 lg:py-5 w-full sm:w-auto text-center tracking-widest bg-black/20 backdrop-blur-sm"
-              data-cursor="Contact"
-            >
-              Talk to an Advisor
-            </Link>
-          </div>
-        </ScrollReveal>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 lg:gap-6 w-full sm:w-auto px-6 sm:px-0 mb-8">
+          <Link
+            href="/properties"
+            className="btn-primary-filled text-xs lg:text-sm px-10 py-4 lg:px-12 lg:py-5 w-full sm:w-auto text-center tracking-widest shadow-[0_10px_30px_rgba(201,168,76,0.2)] hover:shadow-[0_15px_40px_rgba(201,168,76,0.4)] transition-all"
+            data-cursor="Explore"
+          >
+            Explore Plots
+          </Link>
+          <Link
+            href="/contact"
+            className="btn-ghost text-xs lg:text-sm px-10 py-4 lg:px-12 lg:py-5 w-full sm:w-auto text-center tracking-widest bg-black/20 backdrop-blur-sm transition-all"
+            data-cursor="Contact"
+          >
+            Talk to an Advisor
+          </Link>
+        </div>
 
       </div>
 
