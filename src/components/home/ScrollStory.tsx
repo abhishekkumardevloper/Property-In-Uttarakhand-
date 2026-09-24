@@ -24,12 +24,12 @@ const scenes = [
 
 export default function ScrollStory() {
   return (
-    <section className="relative py-24 md:py-40 overflow-hidden bg-[#111111] flex flex-col items-center">
+    <section className="relative py-24 md:py-40 overflow-hidden bg-[#111111]">
       {/* 1. Background Image */}
       <div 
         className="absolute inset-0 z-0 opacity-30 md:opacity-40"
         style={{
-          backgroundImage: "url('/dehradun.png')",
+          backgroundImage: "url('/dehradunn.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundAttachment: "fixed",
@@ -38,10 +38,10 @@ export default function ScrollStory() {
       
       {/* 2. Atmospheric Gradients */}
       <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#111111] via-transparent to-[#111111]" />
-      <div className="absolute inset-0 z-0 bg-black/50 md:bg-black/30" />
+      <div className="absolute inset-0 z-0 bg-black/50 md:bg-black/40" />
 
       {/* 3. Animated Curved Winding Path */}
-      <div className="absolute inset-0 z-10 flex justify-center pointer-events-none overflow-hidden opacity-30 md:opacity-40">
+      <div className="absolute inset-0 z-10 flex justify-center pointer-events-none overflow-hidden opacity-20 md:opacity-30">
         <svg 
           className="w-full h-full max-w-5xl text-gold" 
           preserveAspectRatio="none" 
@@ -60,93 +60,86 @@ export default function ScrollStory() {
         </svg>
       </div>
 
-      {/* 4. Central Anchor Line (Desktop Only) */}
-      <div className="absolute left-1/2 top-10 bottom-10 w-px -translate-x-1/2 bg-white/5 z-10 hidden md:block" />
-
-      {/* 5. Main Content Container */}
-      <div className="container-custom relative z-20 w-full px-4 sm:px-6">
+      <div className="container-custom relative z-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto relative pt-10">
-          
+
+          {/* Center Vertical Line (Desktop Only) */}
+          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold/30 to-transparent -translate-x-1/2 z-10" />
+
           {scenes.map((scene, i) => {
             // Determine if the item sits on the left (even index) or right (odd index)
             const isLeft = i % 2 === 0;
 
             return (
-              <ScrollReveal
-                key={scene.id}
-                delay={0.1}
-                direction="up"
-                // Alternating flex-row reverse logic for desktop
-                className={`relative flex flex-col md:flex-row w-full items-center mb-28 md:mb-48 last:mb-0 ${
-                  !isLeft ? "md:flex-row-reverse" : ""
-                }`}
-              >
-                {/* Content Block (Takes 50% width on Desktop) */}
-                <div 
-                  className={`w-full md:w-1/2 flex flex-col items-center z-20 ${
-                    isLeft 
-                      ? "md:items-end text-center md:text-right md:pr-16 lg:pr-24" 
-                      : "md:items-start text-center md:text-left md:pl-16 lg:pl-24"
-                  }`}
-                >
-                  {/* Mobile-Only Marker (Stacks on top for phones) */}
-                  <div className="md:hidden flex flex-col items-center mb-6">
-                    <div className="w-12 h-12 rounded-full glass-gold flex items-center justify-center text-gold shadow-[0_0_20px_rgba(201,168,76,0.3)] mb-3 border border-gold/30">
-                      <MapPin size={18} />
+              // FIX: The margin is now explicitly on a standard div, completely stopping the collapsing issue
+              <div key={scene.id} className="relative w-full mb-32 md:mb-56 last:mb-0">
+                <ScrollReveal delay={0.1} direction="up" className="w-full">
+                  
+                  {/* Strict Flex Layout to prevent overlaps */}
+                  <div className={`flex flex-col md:flex-row items-center justify-between w-full ${!isLeft ? 'md:flex-row-reverse' : ''}`}>
+                    
+                    {/* Content Column - Strict 45% Width */}
+                    <div className={`w-full md:w-[45%] flex flex-col items-center z-20 ${isLeft ? 'md:items-end md:text-right' : 'md:items-start md:text-left'} text-center`}>
+                      
+                      {/* Mobile-Only Marker */}
+                      <div className="md:hidden flex flex-col items-center mb-6">
+                        <div className="w-14 h-14 rounded-full glass-dark flex items-center justify-center text-gold shadow-[0_0_20px_rgba(201,168,76,0.3)] mb-3 border border-gold/40">
+                          <MapPin size={20} />
+                        </div>
+                        <span className="text-gold tracking-widest text-[10px] uppercase font-bold bg-black/40 px-3 py-1 rounded-full border border-white/5" style={{ fontFamily: "var(--font-inter)" }}>
+                          STEP 0{i + 1}
+                        </span>
+                      </div>
+
+                      {/* Headlines */}
+                      <h2
+                        className="text-4xl md:text-5xl lg:text-6xl text-ivory mb-6 leading-tight drop-shadow-2xl"
+                        style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
+                      >
+                        {scene.lines.map((line, li) => (
+                          <span key={li} className="block">
+                            {li === scene.lines.length - 1 ? (
+                              <em style={{ fontStyle: "italic", color: "var(--color-gold)" }}>
+                                {line}
+                              </em>
+                            ) : (
+                              line
+                            )}
+                          </span>
+                        ))}
+                      </h2>
+
+                      {/* Subtext Card */}
+                      {scene.sub && (
+                        <p
+                          className="text-stone/90 text-sm md:text-base leading-relaxed glass-dark p-6 md:p-8 rounded-xl border border-white/10 shadow-2xl max-w-md backdrop-blur-md"
+                          style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
+                        >
+                          {scene.sub}
+                        </p>
+                      )}
                     </div>
-                    <span
-                      className="text-gold opacity-90 tracking-widest text-[10px] uppercase bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm border border-white/5"
-                      style={{ fontFamily: "var(--font-inter)" }}
-                    >
-                      STEP 0{i + 1}
-                    </span>
+
+                    {/* Center Marker Column - Strict 10% Width (Desktop Only) */}
+                    <div className="hidden md:flex flex-col items-center justify-center w-[10%] z-30">
+                       <div className="w-16 h-16 rounded-full glass-dark flex items-center justify-center text-gold shadow-[0_0_30px_rgba(201,168,76,0.5)] border border-gold/50 relative group transition-transform duration-500 hover:scale-110 hover:bg-gold/10">
+                         <MapPin size={24} />
+                         <span
+                           className="absolute -bottom-10 text-gold tracking-widest text-[10px] uppercase font-bold whitespace-nowrap bg-black/60 px-3 py-1.5 rounded-full border border-white/10 shadow-md"
+                           style={{ fontFamily: "var(--font-inter)" }}
+                         >
+                           STEP 0{i + 1}
+                         </span>
+                       </div>
+                    </div>
+
+                    {/* Empty Space Column - Strict 45% Width (Desktop Only) */}
+                    <div className="hidden md:block w-[45%]" />
+
                   </div>
 
-                  {/* Headlines */}
-                  <h2
-                    className="text-4xl md:text-5xl lg:text-6xl text-ivory mb-6 leading-tight drop-shadow-xl"
-                    style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
-                  >
-                    {scene.lines.map((line, li) => (
-                      <span key={li} className="block">
-                        {li === scene.lines.length - 1 ? (
-                          <em style={{ fontStyle: "italic", color: "var(--color-gold)" }}>
-                            {line}
-                          </em>
-                        ) : (
-                          line
-                        )}
-                      </span>
-                    ))}
-                  </h2>
-
-                  {/* Subtext Card */}
-                  {scene.sub && (
-                    <p
-                      className="text-stone/90 text-sm md:text-base leading-relaxed glass-dark p-6 rounded-xl border border-white/10 shadow-2xl max-w-sm backdrop-blur-md"
-                      style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
-                    >
-                      {scene.sub}
-                    </p>
-                  )}
-                </div>
-
-                {/* Desktop-Only Center Marker (Pinned to the middle) */}
-                <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center z-30">
-                  <div className="w-14 h-14 rounded-full bg-[#111111] flex items-center justify-center text-gold shadow-[0_0_30px_rgba(201,168,76,0.4)] border border-gold/40 transition-transform duration-500 hover:scale-110 group cursor-default">
-                    <MapPin size={22} className="group-hover:animate-bounce" />
-                  </div>
-                  <span
-                    className="absolute top-16 text-gold opacity-80 tracking-widest text-[10px] uppercase whitespace-nowrap bg-black/60 px-3 py-1 rounded-full backdrop-blur-md border border-white/10"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    STEP 0{i + 1}
-                  </span>
-                </div>
-
-                {/* Empty Half Space for Desktop Grid Balance */}
-                <div className="hidden md:block w-1/2" />
-              </ScrollReveal>
+                </ScrollReveal>
+              </div>
             );
           })}
           
