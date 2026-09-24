@@ -722,21 +722,7 @@ export default function MountainScene({ started, onReady }: Props) {
     };
     window.addEventListener("pointermove", onPointerMove, { passive: true });
 
-    /* ---------- sizing ---------- */
-    const resize = () => {
-      const w = Math.max(container.clientWidth, 1);
-      const h = Math.max(container.clientHeight, 1);
-      const aspect = w / h;
-      renderer.setSize(w, h, false);
-      camera.aspect = aspect;
-      camera.fov = aspect < 1 ? 55 + (1 - aspect) * 32 : 55;
-      camera.updateProjectionMatrix();
-    };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(container);
-
-    /* ---------- loop ---------- */
+    /* ---------- loop state (declared early: resize() uses it) ---------- */
     let last = performance.now();
     let t = 0;
     let introStart = -1;
@@ -744,6 +730,35 @@ export default function MountainScene({ started, onReady }: Props) {
     let running = false;
     let visible = true;
     let framesRendered = 0;
+
+    /* ---------- sizing ---------- */
+    let lastW = 0;
+    let lastH = 0;
+    const resize = () => {
+      const w = Math.max(container.clientWidth, 1);
+      const h = Math.max(container.clientHeight, 1);
+      if (w === lastW && h === lastH) return;
+      lastW = w;
+      lastH = h;
+      const aspect = w / h;
+      renderer.setSize(w, h, false); // this clears the canvas…
+      camera.aspect = aspect;
+      camera.fov = aspect < 1 ? 55 + (1 - aspect) * 32 : 55;
+      camera.updateProjectionMatrix();
+      // …so redraw straight away instead of showing the CSS backdrop for a frame
+      if (framesRendered > 0) renderer.render(scene, camera);
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
+
+    /* ---------- loop ---------- */
+    // compile every shader now, while the doors are still shut
+    try {
+      renderer.compile(scene, camera);
+    } catch {
+      /* first render will compile instead */
+    }
 
     const tick = () => {
       if (!visible || document.hidden) {
