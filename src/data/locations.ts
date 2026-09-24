@@ -1,3 +1,5 @@
+// src/data/locations.ts
+
 export interface Location {
   id: string;
   name: string;
@@ -35,8 +37,8 @@ export const locations: Location[] = [
     ],
     investmentNote:
       "Dehradun's real estate market, especially along the new Delhi-Dehradun Expressway and Shimla Bypass, offers rapid ROI and immediate possession opportunities for plotted developments.",
-    // Scenic Dehradun / Foothills view
-    image: "https://images.unsplash.com/photo-1586500036706-41963de24d8b?w=1400&q=80", 
+    // Fixed: Lush green mountain hills
+    image: "https://images.unsplash.com/photo-1593693397690-362cb9666fc2?w=1200&q=80", 
     elevation: "1,400–2,400 ft",
     distanceFromDehradun: "0 km",
     coordinates: [30.3165, 78.0322],
@@ -66,8 +68,8 @@ export const locations: Location[] = [
     ],
     investmentNote:
       "With limited supply and consistently high tourism and residential demand, Mussoorie properties are among the most resilient and appreciating in Uttarakhand.",
-    // Atmospheric misty mountain/Mussoorie view
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=80", 
+    // Fixed: Himalayan peaks and valleys
+    image: "https://images.unsplash.com/photo-1626014903706-5381aa0fa1eb?w=1200&q=80", 
     elevation: "6,578 ft",
     distanceFromDehradun: "35 km",
     coordinates: [30.4598, 78.0644],
@@ -92,8 +94,8 @@ export const locations: Location[] = [
     ],
     investmentNote:
       "Rishikesh holiday properties are achieving 60–80% annual occupancy with premium nightly rates, making it one of the highest-return rental property markets in the Himalayan region.",
-    // Beautiful Rishikesh / Ganga river view
-    image: "https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=1400&q=80", 
+    // Fixed: Ganges River in Rishikesh
+    image: "https://images.unsplash.com/photo-1587334274328-64186a80aeee?w=1200&q=80", 
     elevation: "1,250 ft",
     distanceFromDehradun: "50 km",
     coordinates: [30.1087, 78.3198],
