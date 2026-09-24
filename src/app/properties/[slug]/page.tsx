@@ -68,7 +68,7 @@ export default async function PropertyDetailPage({ params }: Props) {
         <div className="absolute top-24 md:top-32 left-4 md:left-8 z-30">
           <Link
             href="/properties"
-            className="inline-flex items-center gap-2 text-ivory hover:text-gold transition-colors text-xs bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg"
+            className="inline-flex items-center gap-2 text-ivory hover:text-gold transition-colors text-xs bg-black/30 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 shadow-lg"
             style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.1em" }}
             data-cursor="Back"
           >
@@ -114,10 +114,10 @@ export default async function PropertyDetailPage({ params }: Props) {
 
       {/* Main Content Area */}
       <div className="container-custom px-4 lg:px-8 py-12 md:py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-16">
           
           {/* Left Column (Details) */}
-          <div className="lg:col-span-2 space-y-16">
+          <div className="lg:col-span-2 space-y-12 lg:space-y-16">
 
             {/* Overview */}
             <ScrollReveal>
@@ -140,7 +140,6 @@ export default async function PropertyDetailPage({ params }: Props) {
                   <div
                     key={i}
                     className={`relative overflow-hidden rounded-xl shadow-lg group ${i === 0 ? "md:col-span-2" : ""}`}
-                    // Responsive aspect ratios for mobile vs desktop
                     style={{ aspectRatio: i === 0 ? "16/9" : "4/3" }}
                   >
                     <Image
@@ -239,8 +238,8 @@ export default async function PropertyDetailPage({ params }: Props) {
 
           {/* Right Column (Sticky Sidebar) */}
           <div className="lg:col-span-1">
-            {/* sticky and top adjustments ensure it scrolls naturally on mobile, but stays fixed on desktop */}
-            <div className="sticky top-28 space-y-6">
+            {/* FIX: Added z-10 so it scrolls under the navbar. Adjusted top offset. */}
+            <div className="sticky top-24 lg:top-32 space-y-6 z-10 pb-10">
               
               {/* Specs Card */}
               <div className="glass p-6 md:p-8 rounded-xl shadow-2xl border border-white/10">
@@ -252,7 +251,7 @@ export default async function PropertyDetailPage({ params }: Props) {
                 </p>
                 <p
                   className="text-gold mb-8 drop-shadow-sm leading-none"
-                  style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.8rem", fontWeight: 300 }}
+                  style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.5rem", fontWeight: 300 }}
                 >
                   {property.priceDisplay}
                 </p>
@@ -261,16 +260,18 @@ export default async function PropertyDetailPage({ params }: Props) {
                   {specs.slice(1).map((spec) => (
                     <div
                       key={spec.label}
-                      className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0 last:pb-0"
+                      // FIX: Changed to items-start and added a gap to handle long text gracefully.
+                      className="flex items-start justify-between gap-4 border-b border-white/10 pb-4 last:border-0 last:pb-0"
                     >
                       <span
-                        className="text-stone/80 text-xs uppercase"
+                        className="text-stone/80 text-xs uppercase shrink-0 mt-0.5"
                         style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.08em" }}
                       >
                         {spec.label}
                       </span>
+                      {/* FIX: Added text-right to ensure long text (like 'Mussoorie, Chakrata Hills & Forest') wraps instead of overflowing horizontally */}
                       <span
-                        className="text-ivory text-sm font-medium"
+                        className="text-ivory text-sm font-medium text-right"
                         style={{ fontFamily: "var(--font-inter)" }}
                       >
                         {spec.value}
