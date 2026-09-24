@@ -19,12 +19,12 @@ const VIDEO_SRC = "";
 const FOCAL = "50% 58%";
 
 /* ---- timing (ms) — the door timings are unchanged ---- */
-const MIN_CLOSED = 1800; // doors stay shut at least this long (title is readable)
-const FAILSAFE = 6000; // open anyway if the media / clouds are slow
-const OPEN_DURATION = 2000; // door slide
-const CLOUD_START = 1300; // after the doors start opening, clouds begin to part
-const CLOUD_DURATION = 3800; // how long the clouds take to clear
-const REVEAL_AFTER_OPEN = 3000; // headline is written once the sky is about half clear
+const MIN_CLOSED = 1800; 
+const FAILSAFE = 6000; 
+const OPEN_DURATION = 2000; 
+const CLOUD_START = 1300; 
+const CLOUD_DURATION = 3800; 
+const REVEAL_AFTER_OPEN = 3000; 
 
 const EASE_DOOR = "cubic-bezier(0.76, 0, 0.24, 1)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
@@ -61,12 +61,10 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
         willChange: "transform",
       }}
     >
-      {/* Full-width face; each door shows its own half, so the title splits at the seam */}
       <div
         className="absolute top-0 bottom-0 flex flex-col items-center justify-center text-center"
         style={{ width: "200%", [side]: 0 }}
       >
-        {/* ridge silhouette */}
         <svg
           className="absolute bottom-0 left-0 w-full h-[38%]"
           viewBox="0 0 1200 300"
@@ -100,7 +98,6 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
             UTTARAKHAND
           </h2>
 
-          {/* progress line — grows from the seam outward */}
           <div className="mx-auto mt-8 md:mt-10 h-px w-40 sm:w-56 bg-white/10 overflow-hidden">
             <div
               className="h-full w-full bg-gold"
@@ -114,7 +111,6 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
         </div>
       </div>
 
-      {/* glowing seam */}
       <div
         className="absolute top-0 bottom-0 w-px"
         style={{
@@ -155,7 +151,6 @@ export default function HeroSection() {
     setMediaReady(true);
   }, []);
 
-  // the image may already be in cache before React attached onLoad
   useEffect(() => {
     const img = imgRef.current;
     if (img?.complete) {
@@ -164,7 +159,6 @@ export default function HeroSection() {
     }
   }, [handleImgError]);
 
-  // boot: timers, reduced-motion shortcut
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setReduced(true);
@@ -183,26 +177,22 @@ export default function HeroSection() {
     };
   }, []);
 
-  // open when photo + clouds are ready AND the title has been seen
   useEffect(() => {
     if (((mediaReady && cloudsReady) || forceReady) && minElapsed) setOpen(true);
   }, [mediaReady, cloudsReady, forceReady, minElapsed]);
 
-  // after opening: write the headline once the sky is about half clear…
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => setRevealed(true), REVEAL_AFTER_OPEN);
     return () => clearTimeout(t);
   }, [open]);
 
-  // …and remove the doors as soon as they have slid away
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => setDone(true), OPEN_DURATION + 300);
     return () => clearTimeout(t);
   }, [open]);
 
-  // Block scrolling while the doors move
   useEffect(() => {
     if (done) return;
     const stop = (e: Event) => e.preventDefault();
@@ -232,7 +222,6 @@ export default function HeroSection() {
       className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px] flex items-center justify-center"
       style={{ background: "#0d1f17" }}
     >
-      {/* LAYER 1 — real photo (+ optional video) */}
       <div
         className="absolute inset-0 z-0 overflow-hidden"
         style={{
@@ -281,7 +270,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* LAYER 2 — readability scrims */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
@@ -297,7 +285,6 @@ export default function HeroSection() {
         }}
       />
 
-      {/* LAYER 3 — full-screen clouds */}
       <div className="absolute inset-0 z-[15] pointer-events-none">
         <CloudLayer
           clearing={open}
@@ -313,10 +300,8 @@ export default function HeroSection() {
         style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
       />
 
-      {/* LAYER 4 — hero content */}
       <div className="relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center px-4">
         
-        {/* label pill */}
         <div className="mb-6 md:mb-8" style={fadeUp(0, 20)}>
           <span
             className="text-label text-gold inline-block whitespace-nowrap rounded-full px-4 py-2"
@@ -334,7 +319,6 @@ export default function HeroSection() {
           </span>
         </div>
 
-        {/* Main Headline */}
         <h1
           className="text-center w-full mb-6 md:mb-8"
           style={{
@@ -348,16 +332,18 @@ export default function HeroSection() {
               "drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 6px 26px rgba(0,0,0,0.55))",
           }}
         >
-          {HEADLINE.map((line, li) => (
+          {HEADLINE.map((lineArray, li) => (
             <span key={li} className="block overflow-hidden py-3">
-              {line.map(({ w, i }) => (
+              {lineArray.map(({ w, i }, index) => (
                 <span
                   key={i}
-                  className="inline-block mr-[0.3em] last:mr-0"
+                  className="inline-block"
                   style={{
                     opacity: revealed ? 1 : 0,
                     transform: revealed ? "translateY(0)" : "translateY(105%)",
                     transition: `opacity 0.9s ${EASE_OUT} ${i * 120}ms, transform 0.9s ${EASE_OUT} ${i * 120}ms`,
+                    // FIX: Reliable inline margin-right applies spacing between words robustly
+                    marginRight: index !== lineArray.length - 1 ? "0.25em" : "0",
                   }}
                 >
                   {w}
@@ -367,7 +353,6 @@ export default function HeroSection() {
           ))}
         </h1>
 
-        {/* Subtitle */}
         <p
           className="text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2 mb-8 md:mb-12"
           style={{
@@ -381,7 +366,6 @@ export default function HeroSection() {
           Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
         </p>
         
-        {/* CTA Buttons */}
         <div
           className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-6 sm:px-0"
           style={fadeUp(1000)}
@@ -411,7 +395,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
       <div
         className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-20 hidden md:flex flex-col items-center gap-2 pointer-events-none"
         style={{ opacity: revealed ? 0.75 : 0, transition: "opacity 1s ease 1.4s" }}
@@ -422,7 +405,6 @@ export default function HeroSection() {
         <ChevronDown size={16} className="text-stone animate-bounce" style={{ animationDuration: "2s" }} />
       </div>
 
-      {/* LAYER 5 — intro doors: two halves slide apart */}
       {!done && (
         <div className="absolute inset-0 z-40" aria-hidden="true" style={{ pointerEvents: open ? "none" : "auto" }}>
           <Door side="left" open={open} armed={armed} />
