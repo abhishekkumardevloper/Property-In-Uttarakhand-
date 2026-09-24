@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { MapPin, Maximize2, Bed, Bath, Mountain, Phone, ArrowLeft } from "lucide-react";
+import { MapPin, Maximize2, Bed, Bath, Mountain, Phone, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { getPropertyBySlug, properties } from "@/data/properties";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 
@@ -44,8 +44,9 @@ export default async function PropertyDetailPage({ params }: Props) {
 
   return (
     <div style={{ background: "var(--color-charcoal)", minHeight: "100vh" }}>
-      {/* Hero */}
-      <section className="relative" style={{ height: "85vh", minHeight: "500px" }}>
+      
+      {/* Hero Section */}
+      <section className="relative w-full h-[60vh] md:h-[85vh] min-h-[500px] flex flex-col justify-end">
         <Image
           src={property.images[0]}
           alt={property.name}
@@ -54,19 +55,20 @@ export default async function PropertyDetailPage({ params }: Props) {
           priority
           sizes="100vw"
         />
+        {/* Gradient Overlay for Text Readability */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 z-10"
           style={{
             background:
-              "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.9) 100%)",
+              "linear-gradient(180deg, rgba(17,17,17,0.2) 0%, rgba(17,17,17,0.6) 60%, var(--color-charcoal) 100%)",
           }}
         />
 
-        {/* Back */}
-        <div className="absolute top-24 left-8 z-20">
+        {/* Back Button - Responsive Placement & Glassmorphism */}
+        <div className="absolute top-24 md:top-32 left-4 md:left-8 z-30">
           <Link
             href="/properties"
-            className="flex items-center gap-2 text-stone hover:text-ivory transition-colors text-xs"
+            className="inline-flex items-center gap-2 text-ivory hover:text-gold transition-colors text-xs bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg"
             style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.1em" }}
             data-cursor="Back"
           >
@@ -75,91 +77,96 @@ export default async function PropertyDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        {/* Hero text */}
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-8 md:p-16">
-          <div className="container-custom">
-            {property.tag && (
-              <span
-                className="inline-block px-3 py-1 text-[9px] tracking-widest uppercase bg-gold text-charcoal font-semibold mb-4"
-                style={{ fontFamily: "var(--font-inter)" }}
+        {/* Hero Text Content */}
+        <div className="relative z-20 w-full pb-10 md:pb-16 px-4 md:px-8">
+          <div className="container-custom mx-auto">
+            <ScrollReveal direction="up">
+              {property.tag && (
+                <span
+                  className="inline-block px-3 py-1.5 text-[10px] tracking-widest uppercase bg-gold text-charcoal font-bold rounded-sm shadow-md mb-4"
+                  style={{ fontFamily: "var(--font-inter)" }}
+                >
+                  {property.tag}
+                </span>
+              )}
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin size={14} className="text-gold" />
+                <span className="text-mist text-xs md:text-sm tracking-wide" style={{ fontFamily: "var(--font-inter)" }}>
+                  {property.location}
+                </span>
+              </div>
+              <h1
+                className="text-4xl md:text-5xl lg:text-7xl text-ivory mb-4 leading-tight drop-shadow-lg"
+                style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
               >
-                {property.tag}
-              </span>
-            )}
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin size={14} className="text-gold" />
-              <span className="text-mist text-sm" style={{ fontFamily: "var(--font-inter)" }}>
-                {property.location}
-              </span>
-            </div>
-            <h1
-              className="display-lg text-ivory mb-3"
-              style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
-            >
-              {property.name}
-            </h1>
-            <p
-              className="text-mist text-lg font-light"
-              style={{ fontFamily: "var(--font-cormorant)" }}
-            >
-              {property.shortDescription}
-            </p>
+                {property.name}
+              </h1>
+              <p
+                className="text-mist text-base md:text-xl font-light max-w-2xl drop-shadow-md leading-relaxed"
+                style={{ fontFamily: "var(--font-cormorant)" }}
+              >
+                {property.shortDescription}
+              </p>
+            </ScrollReveal>
           </div>
         </div>
       </section>
 
-      {/* Main content */}
-      <div className="container-custom py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
-          {/* Main column */}
+      {/* Main Content Area */}
+      <div className="container-custom px-4 lg:px-8 py-12 md:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
+          
+          {/* Left Column (Details) */}
           <div className="lg:col-span-2 space-y-16">
 
             {/* Overview */}
             <ScrollReveal>
-              <span className="text-label text-gold">Overview</span>
-              <div className="gold-divider" />
+              <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Overview</span>
+              <div className="w-12 h-px bg-gold mb-6" />
               <p
-                className="text-stone leading-loose text-base"
+                className="text-stone/90 leading-loose text-sm md:text-base text-justify md:text-left"
                 style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
               >
                 {property.description}
               </p>
             </ScrollReveal>
 
-            {/* Gallery */}
+            {/* Gallery Grid */}
             <ScrollReveal>
-              <span className="text-label text-gold">Gallery</span>
-              <div className="gold-divider" />
-              <div className="grid grid-cols-2 gap-3">
+              <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Gallery</span>
+              <div className="w-12 h-px bg-gold mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {property.images.map((img, i) => (
                   <div
                     key={i}
-                    className={`relative overflow-hidden group ${i === 0 ? "col-span-2" : ""}`}
-                    style={{ aspectRatio: i === 0 ? "16/7" : "4/3" }}
+                    className={`relative overflow-hidden rounded-xl shadow-lg group ${i === 0 ? "md:col-span-2" : ""}`}
+                    // Responsive aspect ratios for mobile vs desktop
+                    style={{ aspectRatio: i === 0 ? "16/9" : "4/3" }}
                   >
                     <Image
                       src={img}
                       alt={`${property.name} view ${i + 1}`}
                       fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, 60vw"
                     />
+                    <div className="absolute inset-0 bg-black/10 transition-colors duration-500 group-hover:bg-transparent" />
                   </div>
                 ))}
               </div>
             </ScrollReveal>
 
-            {/* Amenities */}
+            {/* Amenities Grid */}
             <ScrollReveal>
-              <span className="text-label text-gold">Amenities</span>
-              <div className="gold-divider" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Amenities & Features</span>
+              <div className="w-12 h-px bg-gold mb-6" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {property.amenities.map((amenity) => (
-                  <div key={amenity} className="amenity-item">
-                    <Mountain size={14} className="text-gold shrink-0" />
+                  <div key={amenity} className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-gold/30 transition-all duration-300 shadow-sm">
+                    <CheckCircle2 size={16} className="text-gold shrink-0" />
                     <span
-                      className="text-stone text-sm"
-                      style={{ fontFamily: "var(--font-inter)" }}
+                      className="text-stone/90 text-sm tracking-wide"
+                      style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
                     >
                       {amenity}
                     </span>
@@ -168,98 +175,102 @@ export default async function PropertyDetailPage({ params }: Props) {
               </div>
             </ScrollReveal>
 
-            {/* Location */}
+            {/* Location & Details Card */}
             <ScrollReveal>
-              <span className="text-label text-gold">Location</span>
-              <div className="gold-divider" />
-              <div className="glass p-8">
-                <div className="flex items-start gap-3 mb-4">
-                  <MapPin size={16} className="text-gold mt-1 shrink-0" />
+              <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Location</span>
+              <div className="w-12 h-px bg-gold mb-6" />
+              <div className="glass p-6 md:p-8 rounded-xl">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center shrink-0 border border-gold/20">
+                    <MapPin size={18} className="text-gold" />
+                  </div>
                   <div>
                     <p
-                      className="text-ivory text-lg font-light mb-1"
+                      className="text-ivory text-xl md:text-2xl font-light mb-2 leading-tight"
                       style={{ fontFamily: "var(--font-cormorant)" }}
                     >
                       {property.location}
                     </p>
                     <p
-                      className="text-stone text-sm"
+                      className="text-stone/80 text-sm tracking-wide uppercase"
                       style={{ fontFamily: "var(--font-inter)" }}
                     >
                       {property.district} District, Uttarakhand
                     </p>
                   </div>
                 </div>
-                {property.elevation && (
-                  <p
-                    className="text-stone text-sm"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    Elevation: {property.elevation}
-                  </p>
-                )}
-                {property.views && (
-                  <p
-                    className="text-stone text-sm mt-2"
-                    style={{ fontFamily: "var(--font-inter)" }}
-                  >
-                    Views: {property.views}
-                  </p>
-                )}
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-6 mt-2">
+                  {property.elevation && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-stone/60 text-xs uppercase tracking-widest" style={{ fontFamily: "var(--font-inter)" }}>Elevation</span>
+                      <span className="text-ivory text-sm">{property.elevation}</span>
+                    </div>
+                  )}
+                  {property.views && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-stone/60 text-xs uppercase tracking-widest" style={{ fontFamily: "var(--font-inter)" }}>Primary Views</span>
+                      <span className="text-ivory text-sm">{property.views}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </ScrollReveal>
 
-            {/* Investment */}
+            {/* Investment Potential */}
             <ScrollReveal>
-              <span className="text-label text-gold">Investment Potential</span>
-              <div className="gold-divider" />
-              <div className="glass-gold p-8">
+              <span className="text-label text-gold block mb-2 tracking-[0.2em] uppercase text-[10px]">Investment Potential</span>
+              <div className="w-12 h-px bg-gold mb-6" />
+              <div className="glass-gold p-6 md:p-8 rounded-xl shadow-lg">
                 <p
-                  className="text-ivory leading-loose"
+                  className="text-ivory/90 leading-loose text-sm md:text-base text-justify md:text-left"
                   style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
                 >
-                  Properties in {property.district} have demonstrated consistent appreciation
+                  Properties in <strong className="text-gold font-normal">{property.district}</strong> have demonstrated consistent appreciation
                   over the past decade, driven by expanding infrastructure, growing tourism,
                   and increasing demand from urban professionals seeking mountain lifestyles.
                   With supply constrained by forest reserve boundaries and a finite amount of
-                  quality land available, this property represents both lifestyle and long-term
+                  quality land available, this property represents both exceptional lifestyle and long-term
                   financial value.
                 </p>
               </div>
             </ScrollReveal>
           </div>
 
-          {/* Sticky sidebar */}
+          {/* Right Column (Sticky Sidebar) */}
           <div className="lg:col-span-1">
-            <div className="sticky top-32 space-y-6">
-              {/* Spec card */}
-              <div className="glass p-8">
+            {/* sticky and top adjustments ensure it scrolls naturally on mobile, but stays fixed on desktop */}
+            <div className="sticky top-28 space-y-6">
+              
+              {/* Specs Card */}
+              <div className="glass p-6 md:p-8 rounded-xl shadow-2xl border border-white/10">
                 <p
-                  className="text-label text-gold mb-6"
-                  style={{ fontSize: "9px" }}
+                  className="text-label text-gold mb-4 tracking-[0.2em] uppercase block"
+                  style={{ fontSize: "10px" }}
                 >
                   Property Details
                 </p>
                 <p
-                  className="text-gold mb-6"
-                  style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.5rem", fontWeight: 300 }}
+                  className="text-gold mb-8 drop-shadow-sm leading-none"
+                  style={{ fontFamily: "var(--font-cormorant)", fontSize: "2.8rem", fontWeight: 300 }}
                 >
                   {property.priceDisplay}
                 </p>
-                <div className="space-y-4 mb-8">
+                
+                <div className="space-y-4 mb-10">
                   {specs.slice(1).map((spec) => (
                     <div
                       key={spec.label}
-                      className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0"
+                      className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0 last:pb-0"
                     >
                       <span
-                        className="text-stone text-xs"
+                        className="text-stone/80 text-xs uppercase"
                         style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.08em" }}
                       >
                         {spec.label}
                       </span>
                       <span
-                        className="text-ivory text-sm"
+                        className="text-ivory text-sm font-medium"
                         style={{ fontFamily: "var(--font-inter)" }}
                       >
                         {spec.value}
@@ -267,76 +278,81 @@ export default async function PropertyDetailPage({ params }: Props) {
                     </div>
                   ))}
                 </div>
-                <div className="space-y-3">
+
+                <div className="space-y-4">
                   <Link
                     href="/contact"
-                    className="btn-primary-filled text-xs w-full text-center block"
+                    className="btn-primary-filled text-xs w-full text-center block py-4 rounded-md shadow-lg hover:shadow-gold/20"
                     data-cursor="Visit"
                   >
                     Schedule a Site Visit
                   </Link>
                   <Link
                     href="/contact"
-                    className="btn-ghost text-xs w-full text-center block"
+                    className="btn-ghost text-xs w-full text-center block py-4 rounded-md"
                     data-cursor="Details"
                   >
-                    Request Full Details
+                    Request Full Brochure
                   </Link>
                   <a
-                    href="https://wa.me/919999999999"
+                    href="https://wa.me/919289533826"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 text-xs border border-green-600 text-green-500 hover:bg-green-600 hover:text-white transition-all"
+                    className="flex items-center justify-center gap-2 w-full py-4 text-xs font-semibold rounded-md border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all shadow-sm"
                     style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.1em" }}
                   >
-                    <Phone size={12} /> WhatsApp Us
+                    <Phone size={14} /> WhatsApp Us
                   </a>
                 </div>
               </div>
 
-              {/* Also check */}
-              <div className="glass p-6">
-                <p className="text-label text-gold mb-4" style={{ fontSize: "9px" }}>
+              {/* Assistance Card */}
+              <div className="glass p-6 md:p-8 rounded-xl border border-white/5">
+                <p className="text-label text-gold mb-3 tracking-widest uppercase" style={{ fontSize: "10px" }}>
                   Need help deciding?
                 </p>
                 <p
-                  className="text-stone text-xs leading-relaxed mb-4"
+                  className="text-stone/90 text-sm leading-relaxed mb-6"
                   style={{ fontFamily: "var(--font-inter)", fontWeight: 300 }}
                 >
-                  Our advisors know every property personally. Let us help
-                  you compare options and find the right fit.
+                  Our advisors know every property personally. Let us help you compare options and find the perfect fit for your legacy.
                 </p>
                 <Link
                   href="/contact"
-                  className="text-gold text-xs flex items-center gap-2 hover:gap-3 transition-all"
-                  style={{ fontFamily: "var(--font-inter)", letterSpacing: "0.1em" }}
+                  className="text-gold text-xs flex items-center gap-2 hover:gap-4 transition-all uppercase tracking-widest font-semibold group"
+                  style={{ fontFamily: "var(--font-inter)" }}
                 >
                   Talk to an Advisor
-                  <div className="h-px w-8 bg-gold" />
+                  <div className="h-px w-8 bg-gold transition-all duration-300 group-hover:w-12" />
                 </Link>
               </div>
+              
             </div>
           </div>
+          
         </div>
       </div>
 
-      {/* Related CTA */}
+      {/* Related Properties CTA */}
       <section
-        className="py-20 text-center"
+        className="py-24 text-center border-t border-white/5 mt-10"
         style={{ background: "var(--color-mountain-dark)" }}
       >
-        <div className="container-custom">
-          <h2
-            className="display-sm text-ivory mb-6"
-            style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
-          >
-            Explore More Properties
-          </h2>
-          <Link href="/properties" className="btn-primary text-xs" data-cursor="Explore">
-            View All Properties
-          </Link>
+        <div className="container-custom px-4">
+          <ScrollReveal>
+            <h2
+              className="text-4xl md:text-5xl text-ivory mb-8"
+              style={{ fontFamily: "var(--font-cormorant)", fontWeight: 300 }}
+            >
+              Explore More Properties
+            </h2>
+            <Link href="/properties" className="btn-primary text-xs w-full sm:w-auto inline-flex justify-center" data-cursor="Explore">
+              View All Properties
+            </Link>
+          </ScrollReveal>
         </div>
       </section>
+      
     </div>
   );
 }
