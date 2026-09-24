@@ -52,8 +52,6 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
           ? "linear-gradient(100deg, #08130e 0%, #0f2119 70%, #14291f 100%)"
           : "linear-gradient(260deg, #08130e 0%, #0f2119 70%, #14291f 100%)",
         transform: open ? `translateX(${isLeft ? "-101%" : "101%"})` : "translateX(0)",
-        // The shadow is only there while the doors are shut. If it stayed on, a dark band
-        // would hang at both screen edges after opening and then pop away when the doors unmount.
         boxShadow: open
           ? "0 0 0 rgba(0,0,0,0)"
           : isLeft
@@ -93,7 +91,7 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
               fontFamily: "var(--font-cormorant)",
               fontWeight: 300,
               fontSize: "clamp(2.4rem, 9.5vw, 7.5rem)",
-              lineHeight: 0.98,
+              lineHeight: 1.15,
               letterSpacing: "0.04em",
             }}
           >
@@ -204,8 +202,7 @@ export default function HeroSection() {
     return () => clearTimeout(t);
   }, [open]);
 
-  // Block scrolling while the doors move (cancel input instead of toggling overflow,
-  // which would make the desktop scrollbar vanish/reappear and shift the layout).
+  // Block scrolling while the doors move
   useEffect(() => {
     if (done) return;
     const stop = (e: Event) => e.preventDefault();
@@ -235,7 +232,7 @@ export default function HeroSection() {
       className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px] flex items-center justify-center"
       style={{ background: "#0d1f17" }}
     >
-      {/* LAYER 1 — real photo (+ optional video). Slow push-in starts when the doors open. */}
+      {/* LAYER 1 — real photo (+ optional video) */}
       <div
         className="absolute inset-0 z-0 overflow-hidden"
         style={{
@@ -284,7 +281,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* LAYER 2 — readability scrims (keep the headline legible on any photo) */}
+      {/* LAYER 2 — readability scrims */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
@@ -300,7 +297,7 @@ export default function HeroSection() {
         }}
       />
 
-      {/* LAYER 3 — full-screen clouds: total cover first, then they part to reveal the photo */}
+      {/* LAYER 3 — full-screen clouds */}
       <div className="absolute inset-0 z-[15] pointer-events-none">
         <CloudLayer
           clearing={open}
@@ -316,7 +313,7 @@ export default function HeroSection() {
         style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
       />
 
-      {/* LAYER 4 — hero content (Perfectly Centered) */}
+      {/* LAYER 4 — hero content */}
       <div className="relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center px-4">
         
         {/* label pill */}
@@ -345,19 +342,18 @@ export default function HeroSection() {
             fontFamily: "var(--font-cormorant)",
             fontWeight: 400,
             fontSize: "clamp(2.6rem, min(11vw, 12.5vh), 6.6rem)",
-            lineHeight: 0.98,
-            letterSpacing: "0.01em",
-            // drop-shadow on the heading (not on the words) so the per-line overflow clip can't cut it off
+            lineHeight: 1.15,
+            letterSpacing: "0.03em",
             filter:
               "drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 6px 26px rgba(0,0,0,0.55))",
           }}
         >
           {HEADLINE.map((line, li) => (
-            <span key={li} className="block overflow-hidden pt-1 pb-2">
+            <span key={li} className="block overflow-hidden py-3">
               {line.map(({ w, i }) => (
                 <span
                   key={i}
-                  className="inline-block mr-[0.25em] last:mr-0"
+                  className="inline-block mr-[0.3em] last:mr-0"
                   style={{
                     opacity: revealed ? 1 : 0,
                     transform: revealed ? "translateY(0)" : "translateY(105%)",
@@ -426,7 +422,7 @@ export default function HeroSection() {
         <ChevronDown size={16} className="text-stone animate-bounce" style={{ animationDuration: "2s" }} />
       </div>
 
-      {/* LAYER 5 — intro doors: two halves slide apart (unchanged) */}
+      {/* LAYER 5 — intro doors: two halves slide apart */}
       {!done && (
         <div className="absolute inset-0 z-40" aria-hidden="true" style={{ pointerEvents: open ? "none" : "auto" }}>
           <Door side="left" open={open} armed={armed} />
