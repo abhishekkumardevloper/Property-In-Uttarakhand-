@@ -20,6 +20,8 @@ const REVEAL_AFTER_OPEN = 1100; // headline starts once doors are ~half open
 const EASE_DOOR = "cubic-bezier(0.76, 0, 0.24, 1)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
+const IVORY = "#fbf7ec";
+
 /* headline words with a global index for the stagger */
 let n = 0;
 const HEADLINE = ["WHERE THE", "MOUNTAINS", "BECOME HOME."].map((line) =>
@@ -40,9 +42,15 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
         background: isLeft
           ? "linear-gradient(100deg, #08130e 0%, #0f2119 70%, #14291f 100%)"
           : "linear-gradient(260deg, #08130e 0%, #0f2119 70%, #14291f 100%)",
-        transform: open ? `translateX(${isLeft ? "-100%" : "100%"})` : "translateX(0)",
-        transition: `transform ${OPEN_DURATION}ms ${EASE_DOOR}`,
-        boxShadow: isLeft ? "40px 0 90px rgba(0,0,0,0.55)" : "-40px 0 90px rgba(0,0,0,0.55)",
+        transform: open ? `translateX(${isLeft ? "-101%" : "101%"})` : "translateX(0)",
+        // The shadow is only there while the doors are shut. If it stayed on, a dark band
+        // would hang at both screen edges after opening and then pop away when the doors unmount.
+        boxShadow: open
+          ? "0 0 0 rgba(0,0,0,0)"
+          : isLeft
+            ? "40px 0 90px rgba(0,0,0,0.55)"
+            : "-40px 0 90px rgba(0,0,0,0.55)",
+        transition: `transform ${OPEN_DURATION}ms ${EASE_DOOR}, box-shadow 500ms ease`,
         willChange: "transform",
       }}
     >
@@ -155,20 +163,31 @@ export default function HeroSection() {
   useEffect(() => {
     if (!open || done) return;
     const t1 = setTimeout(() => setRevealed(true), REVEAL_AFTER_OPEN);
-    const t2 = setTimeout(() => setDone(true), OPEN_DURATION + 200);
+    const t2 = setTimeout(() => setDone(true), OPEN_DURATION + 300);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
   }, [open, done]);
 
-  // lock scroll while the intro plays
+  // Block scrolling while the intro plays.
+  // (Toggling `overflow: hidden` on <html> makes the desktop scrollbar vanish and reappear,
+  //  which shifts the layout and makes the canvas flash — so we cancel scroll input instead.)
   useEffect(() => {
     if (done) return;
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
+    const stop = (e: Event) => e.preventDefault();
+    const keys = (e: KeyboardEvent) => {
+      if ([" ", "PageDown", "PageUp", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("wheel", stop, { passive: false });
+    window.addEventListener("touchmove", stop, { passive: false });
+    window.addEventListener("keydown", keys);
     return () => {
-      document.documentElement.style.overflow = prev;
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchmove", stop);
+      window.removeEventListener("keydown", keys);
     };
   }, [done]);
 
@@ -180,8 +199,8 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative w-full overflow-hidden"
-      style={{ height: "100dvh", minHeight: "600px", background: "#0d1f17" }}
+      className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px]"
+      style={{ background: "#0d1f17" }}
     >
       {/* LAYER 1 — 3D valley */}
       <div
@@ -193,41 +212,63 @@ export default function HeroSection() {
         <MountainScene started={open} onReady={handleReady} />
       </div>
 
-      {/* LAYER 2 — legibility + cinematic grade */}
+      {/* LAYER 2 — readability scrims (keep the headline legible on any part of the scene) */}
       <div
         className="absolute inset-0 z-10 pointer-events-none"
         style={{
           background:
-            "linear-gradient(180deg, rgba(6,18,14,0.55) 0%, rgba(6,18,14,0.18) 42%, rgba(6,18,14,0) 62%)",
+            "linear-gradient(180deg, rgba(4,12,10,0.5) 0%, rgba(4,12,10,0.3) 36%, rgba(4,12,10,0.14) 62%, rgba(4,12,10,0) 84%)",
         }}
       />
       <div
-        className="absolute bottom-0 left-0 right-0 h-48 z-10 pointer-events-none"
+        className="absolute inset-0 z-10 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 78% 46% at 50% 38%, rgba(4,12,10,0.42) 0%, rgba(4,12,10,0.22) 55%, rgba(4,12,10,0) 100%)",
+        }}
+      />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-40 md:h-48 z-10 pointer-events-none"
         style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
       />
 
       {/* LAYER 3 — hero content */}
-      <div className="relative z-20 h-full w-full max-w-5xl mx-auto flex flex-col items-center justify-between md:justify-center text-center px-4 sm:px-6 pt-24 pb-28 md:pt-16 md:pb-0">
+      <div className="relative z-20 h-full w-full max-w-5xl mx-auto flex flex-col items-center justify-between md:justify-center text-center px-5 sm:px-6 pt-24 pb-24 sm:pb-28 md:pt-16 md:pb-0">
         <div className="flex flex-col items-center w-full">
-          <div className="mb-5 md:mb-8" style={fadeUp(0, 20)}>
-            <span className="text-label text-gold" style={{ textShadow: "0 1px 14px rgba(0,0,0,0.6)" }}>
+          {/* label pill */}
+          <div className="mb-5 md:mb-7" style={fadeUp(0, 20)}>
+            <span
+              className="text-label text-gold inline-block whitespace-nowrap rounded-full px-4 py-2"
+              style={{
+                background: "rgba(5,14,11,0.55)",
+                border: "1px solid rgba(201,169,110,0.35)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                textShadow: "0 1px 6px rgba(0,0,0,0.6)",
+                fontSize: "clamp(0.56rem, 2.5vw, 0.75rem)",
+                letterSpacing: "clamp(0.14em, 0.6vw + 0.08em, 0.28em)",
+              }}
+            >
               Property in Uttarakhand · Premium Plots
             </span>
           </div>
 
           <h1
-            className="text-ivory text-center w-full mb-5 md:mb-8"
+            className="text-center w-full mb-5 md:mb-7"
             style={{
+              color: IVORY,
               fontFamily: "var(--font-cormorant)",
-              fontWeight: 300,
-              fontSize: "clamp(2.5rem, 8.6vw, 6.6rem)",
+              fontWeight: 400,
+              fontSize: "clamp(2.6rem, min(11vw, 12.5vh), 6.6rem)",
               lineHeight: 0.98,
               letterSpacing: "0.01em",
-              textShadow: "0 2px 34px rgba(0,0,0,0.4)",
+              // drop-shadow on the heading (not on the words) so the per-line overflow clip can't cut it off
+              filter:
+                "drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 6px 26px rgba(0,0,0,0.55))",
             }}
           >
             {HEADLINE.map((line, li) => (
-              <span key={li} className="block overflow-hidden pb-2">
+              <span key={li} className="block overflow-hidden pt-1 pb-2">
                 {line.map(({ w, i }) => (
                   <span
                     key={i}
@@ -246,11 +287,12 @@ export default function HeroSection() {
           </h1>
 
           <p
-            className="text-mist text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2"
+            className="text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2"
             style={{
+              color: "#f3eee2",
               fontFamily: "var(--font-inter)",
-              fontWeight: 300,
-              textShadow: "0 1px 18px rgba(0,0,0,0.55)",
+              fontWeight: 400,
+              textShadow: "0 1px 2px rgba(0,0,0,0.7), 0 2px 18px rgba(0,0,0,0.6)",
               ...fadeUp(750),
             }}
           >
@@ -259,12 +301,13 @@ export default function HeroSection() {
         </div>
 
         <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-2 sm:px-0 md:mt-12"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto md:mt-10"
           style={fadeUp(1000)}
         >
           <Link
             href="/properties"
             className="btn-primary-filled text-xs px-10 py-4 w-full sm:w-auto text-center"
+            style={{ boxShadow: "0 8px 28px rgba(0,0,0,0.35)" }}
             data-cursor="Explore"
           >
             Explore Plots
@@ -272,6 +315,13 @@ export default function HeroSection() {
           <Link
             href="/contact"
             className="btn-ghost text-xs px-10 py-4 w-full sm:w-auto text-center"
+            style={{
+              color: IVORY,
+              background: "rgba(5,14,11,0.5)",
+              borderColor: "rgba(251,247,236,0.6)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+            }}
             data-cursor="Discover"
           >
             Talk to an Advisor
@@ -281,8 +331,8 @@ export default function HeroSection() {
 
       {/* Scroll indicator */}
       <div
-        className="absolute bottom-5 md:bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
-        style={{ opacity: revealed ? 0.65 : 0, transition: "opacity 1s ease 1.4s" }}
+        className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-20 hidden [@media(min-width:768px)_and_(min-height:780px)]:flex flex-col items-center gap-2 pointer-events-none"
+        style={{ opacity: revealed ? 0.75 : 0, transition: "opacity 1s ease 1.4s" }}
       >
         <span className="text-label text-stone" style={{ fontSize: "9px" }}>
           Scroll
