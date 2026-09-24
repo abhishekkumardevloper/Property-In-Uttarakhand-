@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 import CloudLayer from "@/components/home/CloudLayer";
 
 /* ------------------------------------------------------------------ */
-/*  YOUR MEDIA — drop real files into /public/hero/                    */
+/*  YOUR MEDIA — drop real files into /public/hero/                   */
 /* ------------------------------------------------------------------ */
 
 /** Real photo of your plots / the mountains. 2400px wide, JPG or WebP, ideally under 400 KB. */
@@ -86,7 +86,7 @@ function Door({ side, open, armed }: { side: "left" | "right"; open: boolean; ar
         </svg>
 
         <div className="relative px-6">
-          <p className="text-label text-gold mb-5 md:mb-7">Premium Plots · Himalayan Estates</p>
+          <p className="text-label text-gold mb-5 md:mb-7">Premium Plots · Property in Uttarakhand</p>
           <h2
             className="text-ivory"
             style={{
@@ -232,7 +232,7 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px]"
+      className="relative w-full overflow-hidden h-screen h-[100svh] min-h-[600px] flex items-center justify-center"
       style={{ background: "#0d1f17" }}
     >
       {/* LAYER 1 — real photo (+ optional video). Slow push-in starts when the doors open. */}
@@ -316,76 +316,78 @@ export default function HeroSection() {
         style={{ background: "linear-gradient(0deg, var(--color-charcoal) 0%, transparent 100%)" }}
       />
 
-      {/* LAYER 4 — hero content */}
-      <div className="relative z-20 h-full w-full max-w-5xl mx-auto flex flex-col items-center justify-between md:justify-center text-center px-5 sm:px-6 pt-24 pb-24 sm:pb-28 md:pt-16 md:pb-0">
-        <div className="flex flex-col items-center w-full">
-          {/* label pill */}
-          <div className="mb-5 md:mb-7" style={fadeUp(0, 20)}>
-            <span
-              className="text-label text-gold inline-block whitespace-nowrap rounded-full px-4 py-2"
-              style={{
-                background: "rgba(5,14,11,0.55)",
-                border: "1px solid rgba(201,169,110,0.35)",
-                backdropFilter: "blur(6px)",
-                WebkitBackdropFilter: "blur(6px)",
-                textShadow: "0 1px 6px rgba(0,0,0,0.6)",
-                fontSize: "clamp(0.56rem, 2.5vw, 0.75rem)",
-                letterSpacing: "clamp(0.14em, 0.6vw + 0.08em, 0.28em)",
-              }}
-            >
-              Property in Uttarakhand · Premium Plots
-            </span>
-          </div>
-
-          <h1
-            className="text-center w-full mb-5 md:mb-7"
+      {/* LAYER 4 — hero content (Perfectly Centered) */}
+      <div className="relative z-20 w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center px-4">
+        
+        {/* label pill */}
+        <div className="mb-6 md:mb-8" style={fadeUp(0, 20)}>
+          <span
+            className="text-label text-gold inline-block whitespace-nowrap rounded-full px-4 py-2"
             style={{
-              color: IVORY,
-              fontFamily: "var(--font-cormorant)",
-              fontWeight: 400,
-              fontSize: "clamp(2.6rem, min(11vw, 12.5vh), 6.6rem)",
-              lineHeight: 0.98,
-              letterSpacing: "0.01em",
-              // drop-shadow on the heading (not on the words) so the per-line overflow clip can't cut it off
-              filter:
-                "drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 6px 26px rgba(0,0,0,0.55))",
+              background: "rgba(5,14,11,0.55)",
+              border: "1px solid rgba(201,169,110,0.35)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+              textShadow: "0 1px 6px rgba(0,0,0,0.6)",
+              fontSize: "clamp(0.56rem, 2.5vw, 0.75rem)",
+              letterSpacing: "clamp(0.14em, 0.6vw + 0.08em, 0.28em)",
             }}
           >
-            {HEADLINE.map((line, li) => (
-              <span key={li} className="block overflow-hidden pt-1 pb-2">
-                {line.map(({ w, i }) => (
-                  <span
-                    key={i}
-                    className="inline-block mr-[0.25em] last:mr-0"
-                    style={{
-                      opacity: revealed ? 1 : 0,
-                      transform: revealed ? "translateY(0)" : "translateY(105%)",
-                      transition: `opacity 0.9s ${EASE_OUT} ${i * 120}ms, transform 0.9s ${EASE_OUT} ${i * 120}ms`,
-                    }}
-                  >
-                    {w}
-                  </span>
-                ))}
-              </span>
-            ))}
-          </h1>
-
-          <p
-            className="text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2"
-            style={{
-              color: "#f3eee2",
-              fontFamily: "var(--font-inter)",
-              fontWeight: 400,
-              textShadow: "0 1px 2px rgba(0,0,0,0.7), 0 2px 18px rgba(0,0,0,0.6)",
-              ...fadeUp(750),
-            }}
-          >
-            Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
-          </p>
+            Property in Uttarakhand · Premium Plots
+          </span>
         </div>
 
+        {/* Main Headline */}
+        <h1
+          className="text-center w-full mb-6 md:mb-8"
+          style={{
+            color: IVORY,
+            fontFamily: "var(--font-cormorant)",
+            fontWeight: 400,
+            fontSize: "clamp(2.6rem, min(11vw, 12.5vh), 6.6rem)",
+            lineHeight: 0.98,
+            letterSpacing: "0.01em",
+            // drop-shadow on the heading (not on the words) so the per-line overflow clip can't cut it off
+            filter:
+              "drop-shadow(0 2px 3px rgba(0,0,0,0.55)) drop-shadow(0 6px 26px rgba(0,0,0,0.55))",
+          }}
+        >
+          {HEADLINE.map((line, li) => (
+            <span key={li} className="block overflow-hidden pt-1 pb-2">
+              {line.map(({ w, i }) => (
+                <span
+                  key={i}
+                  className="inline-block mr-[0.25em] last:mr-0"
+                  style={{
+                    opacity: revealed ? 1 : 0,
+                    transform: revealed ? "translateY(0)" : "translateY(105%)",
+                    transition: `opacity 0.9s ${EASE_OUT} ${i * 120}ms, transform 0.9s ${EASE_OUT} ${i * 120}ms`,
+                  }}
+                >
+                  {w}
+                </span>
+              ))}
+            </span>
+          ))}
+        </h1>
+
+        {/* Subtitle */}
+        <p
+          className="text-sm sm:text-base md:text-lg max-w-md leading-relaxed px-2 mb-8 md:mb-12"
+          style={{
+            color: "#f3eee2",
+            fontFamily: "var(--font-inter)",
+            fontWeight: 400,
+            textShadow: "0 1px 2px rgba(0,0,0,0.7), 0 2px 18px rgba(0,0,0,0.6)",
+            ...fadeUp(750),
+          }}
+        >
+          Premium Plotted Developments & High-ROI Land Investments in Uttarakhand
+        </p>
+        
+        {/* CTA Buttons */}
         <div
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto md:mt-10"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto px-6 sm:px-0"
           style={fadeUp(1000)}
         >
           <Link
@@ -415,7 +417,7 @@ export default function HeroSection() {
 
       {/* Scroll indicator */}
       <div
-        className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-20 hidden [@media(min-width:768px)_and_(min-height:780px)]:flex flex-col items-center gap-2 pointer-events-none"
+        className="absolute bottom-4 md:bottom-10 left-1/2 -translate-x-1/2 z-20 hidden md:flex flex-col items-center gap-2 pointer-events-none"
         style={{ opacity: revealed ? 0.75 : 0, transition: "opacity 1s ease 1.4s" }}
       >
         <span className="text-label text-stone" style={{ fontSize: "9px" }}>
@@ -434,4 +436,3 @@ export default function HeroSection() {
     </section>
   );
 }
-
